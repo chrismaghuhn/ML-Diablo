@@ -111,6 +111,22 @@ std::string ValidateObservation(const Observation &observation)
     if (observation.player.hpMax <= 0 || observation.player.hp < 0
         || observation.player.hp > observation.player.hpMax)
         return "invalid player HP";
+    std::set<std::pair<std::string, std::uint32_t>> inventorySlots;
+    for (const auto &item : observation.player.inventory) {
+        if (item.container != "EQUIPPED" && item.container != "INVENTORY"
+            && item.container != "BELT")
+            return "invalid inventory container";
+        if (item.typeId.empty())
+            return "inventory typeId is required";
+        if (item.identified && item.typeId == "UNIDENTIFIED")
+            return "identified inventory item cannot use UNIDENTIFIED";
+        if (!item.identified && item.typeId != "UNIDENTIFIED")
+            return "unidentified inventory item must use UNIDENTIFIED";
+        if (item.quantity == 0)
+            return "inventory quantity must be positive";
+        if (!inventorySlots.emplace(item.container, item.slot).second)
+            return "inventory slots must be unique";
+    }
     if (observation.legalActions.empty())
         return "at least one legal action is required";
 

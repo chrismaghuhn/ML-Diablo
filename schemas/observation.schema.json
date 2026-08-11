@@ -43,7 +43,7 @@
       "additionalProperties": false,
       "required": [
         "position", "hp", "hp_max", "mana", "mana_max", "level",
-        "experience", "gold", "potions", "class_id", "dungeon_level", "attributes"
+        "experience", "gold", "potions", "class_id", "dungeon_level", "attributes", "inventory"
       ],
       "properties": {
         "position": {"$ref": "#/$defs/vec2"},
@@ -57,7 +57,20 @@
         "potions": {"type": "integer", "minimum": 0},
         "class_id": {"type": "string", "minLength": 1},
         "dungeon_level": {"type": "integer", "minimum": 0},
-        "attributes": {"$ref": "#/$defs/attributes"}
+        "attributes": {"$ref": "#/$defs/attributes"},
+        "inventory": {"type": "array", "items": {"$ref": "#/$defs/inventory_item"}}
+      }
+    },
+    "inventory_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["container", "slot", "type_id", "identified", "quantity"],
+      "properties": {
+        "container": {"enum": ["EQUIPPED", "INVENTORY", "BELT"]},
+        "slot": {"type": "integer", "minimum": 0},
+        "type_id": {"type": "string", "minLength": 1},
+        "identified": {"type": "boolean"},
+        "quantity": {"type": "integer", "minimum": 1}
       }
     },
     "entity": {

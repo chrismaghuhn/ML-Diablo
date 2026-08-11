@@ -51,6 +51,27 @@ Eine echte DevilutionX-Instanz kann deterministisch resetten, semantische legale
 - Full-Run-Saves;
 - Pixelobs.
 
+### M0-Slice-Reihenfolge
+
+Der Contract-Foundation-Milestone wird in kleinen Engine-Grenzen abgearbeitet:
+
+```text
+M0.1  gepinnter Upstream-Build und Headless-Smoke
+  |
+M0.2  echte read-only Observation
+  |
+M0.3  legale Candidates, candidate_id und ein semantischer Step
+  |
+M0.4  Decision-Boundary-, State-Hash- und Replay-Gates
+  |
+M0.5  echte Trajektorie gegen die versionierten Datenvertraege
+```
+
+M0.2 ist dabei noch kein Abschluss des globalen M0. Es beweist nur, dass der
+Engine-Prozess reproduzierbar initialisiert und ein begrenztes
+player-observable JSON erzeugt werden kann. ML-Training beginnt erst nach den
+folgenden Action-, Reset-, Legalitaets- und Replay-Gates.
+
 ### Exit
 
 Alle Gates in `21_MILESTONE_ACCEPTANCE.md` M0 bestehen.

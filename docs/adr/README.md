@@ -18,3 +18,4 @@ Akzeptierte ADRs sind normativ. Eine Änderung erfordert eine neue ADR, die die 
 | [0010](0010-sealed-evaluation.md) | Versiegelte Seedsets und Pflichtbaselines | Accepted |
 | [0011](0011-separate-demo-replay.md) | Demo- und Agent-Replay getrennt | Accepted |
 | [0012](0012-world-models-later.md) | World Models/Search erst nach model-free Baseline | Accepted |
+| [0013](0013-m02-external-read-only-probe.md) | M0.2 als externe read-only Observation-Probe | Accepted |

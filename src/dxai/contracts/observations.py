@@ -18,6 +18,56 @@ class EntityKind(StrEnum):
     STAIRS = "STAIRS"
 
 
+class InventoryContainer(StrEnum):
+    EQUIPPED = "EQUIPPED"
+    INVENTORY = "INVENTORY"
+    BELT = "BELT"
+
+
+@dataclass(frozen=True, slots=True)
+class InventoryItem:
+    container: InventoryContainer
+    slot: int
+    type_id: str
+    identified: bool
+    quantity: int = 1
+
+    def validate(self) -> None:
+        if not isinstance(self.container, InventoryContainer):
+            raise ValueError("inventory container must be an InventoryContainer")
+        if self.slot < 0:
+            raise ValueError("inventory slot must be non-negative")
+        if not self.type_id:
+            raise ValueError("inventory type_id is required")
+        if self.identified and self.type_id == "UNIDENTIFIED":
+            raise ValueError("identified inventory items cannot use UNIDENTIFIED")
+        if not self.identified and self.type_id != "UNIDENTIFIED":
+            raise ValueError("unidentified inventory items must use UNIDENTIFIED")
+        if self.quantity < 1:
+            raise ValueError("inventory quantity must be positive")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "container": self.container.value,
+            "slot": self.slot,
+            "type_id": self.type_id,
+            "identified": self.identified,
+            "quantity": self.quantity,
+        }
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> InventoryItem:
+        result = cls(
+            container=InventoryContainer(value["container"]),
+            slot=int(value["slot"]),
+            type_id=str(value["type_id"]),
+            identified=bool(value["identified"]),
+            quantity=int(value.get("quantity", 1)),
+        )
+        result.validate()
+        return result
+
+
 @dataclass(frozen=True, slots=True)
 class PlayerState:
     position: Vec2
@@ -32,6 +82,7 @@ class PlayerState:
     class_id: str = "WARRIOR"
     dungeon_level: int = 1
     attributes: tuple[tuple[str, float], ...] = ()
+    inventory: tuple[InventoryItem, ...] = ()
 
     def validate(self) -> None:
         if self.hp_max <= 0 or not 0 <= self.hp <= self.hp_max:
@@ -47,6 +98,11 @@ class PlayerState:
             raise ValueError("player attribute keys must be non-empty and unique")
         if any(not math.isfinite(value) for _, value in self.attributes):
             raise ValueError("player attributes must be finite")
+        inventory_slots = [(item.container, item.slot) for item in self.inventory]
+        if len(inventory_slots) != len(set(inventory_slots)):
+            raise ValueError("inventory slot entries must be unique")
+        for item in self.inventory:
+            item.validate()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -62,6 +118,7 @@ class PlayerState:
             "class_id": self.class_id,
             "dungeon_level": self.dungeon_level,
             "attributes": {key: value for key, value in self.attributes},
+            "inventory": [item.to_dict() for item in self.inventory],
         }
 
     @classmethod
@@ -80,6 +137,9 @@ class PlayerState:
             class_id=str(value.get("class_id", "WARRIOR")),
             dungeon_level=int(value.get("dungeon_level", 1)),
             attributes=tuple(sorted((str(k), float(v)) for k, v in attributes.items())),
+            inventory=tuple(
+                InventoryItem.from_dict(item) for item in value.get("inventory", [])
+            ),
         )
         result.validate()
         return result

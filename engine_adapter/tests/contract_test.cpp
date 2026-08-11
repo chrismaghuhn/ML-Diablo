@@ -59,12 +59,33 @@ void Require(bool condition, const char *message)
 int main()
 {
     FakeEnvironment environment;
-    const auto observation = environment.Reset(dxai_bridge::ResetRequest {
+    auto observation = environment.Reset(dxai_bridge::ResetRequest {
         .requestId = 1,
         .seed = 42,
         .taskId = "combat.single_melee.v0",
     });
     Require(dxai_bridge::ValidateObservation(observation).empty(), "observation must validate");
+
+    observation.player.inventory.push_back(dxai_bridge::InventoryItem {
+        .container = "BELT",
+        .slot = 0,
+        .typeId = "HEALING_POTION",
+        .identified = true,
+        .quantity = 1,
+    });
+    Require(
+        dxai_bridge::ValidateObservation(observation).empty(),
+        "valid inventory item must validate");
+    observation.player.inventory.push_back(dxai_bridge::InventoryItem {
+        .container = "BELT",
+        .slot = 0,
+        .typeId = "MANA_POTION",
+        .identified = true,
+        .quantity = 1,
+    });
+    Require(
+        !dxai_bridge::ValidateObservation(observation).empty(),
+        "duplicate inventory slots must be rejected");
 
     const auto result = environment.Step(dxai_bridge::StepRequest {
         .requestId = 2,

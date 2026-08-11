@@ -27,12 +27,29 @@ Version: `0.1.0`
 - `--help` und `--version` des gepinnten Binaries mit Exit-Code 0 gestartet.
 
 Die vollstaendige Upstream-Testmatrix bleibt ohne Diablo-MPQs und Originaldaten
-bewusst datenbegrenzt. Eine echte Observation-/Action-Bridge ist weiterhin nicht
-implementiert.
+bewusst datenbegrenzt. Eine vollstaendige Observation-/Action-Bridge ist noch
+nicht implementiert.
+
+## M0.2 lokal geprueft
+
+- read-only C++-Probe gegen den gepinnten Upstream-Release-Build gebaut;
+- GOG-Datenpfad und lose DevilutionX-Core-Assets als getrennte Eingaben
+  verwendet;
+- echte `dxai.observation.v1` mit Player-State, 121 lokalen Tiles und 6
+  Inventareintraegen erzeugt;
+- Sichtbarkeitsfilter fuer Entities und begrenztes Tilefenster aktiv;
+- gleiche Seed-Ausfuehrungen byte-identisch geprueft;
+- fehlender Assetpfad als strukturierter `ASSET_DATA_UNAVAILABLE`-Fehler
+  geprueft;
+- rohe Probeausgabe gegen die lokale JSON-Schema-Registry validiert.
+
+Die Probe ist absichtlich noch kein Environment: Candidate-Ausfuehrung,
+`step`, Decision-Boundary-Fortschritt, IPC und echte Transition-/Replay-Gates
+folgen in M0.3/M0.
 
 ## Noch nicht implementiert
 
-- echte DevilutionX-Bridge;
+- vollstaendige DevilutionX-Bridge mit Reset/Step/Candidate-Ausfuehrung und IPC;
 - automatischer Fixturebau im Upstream;
 - Human-Demo-Recorder;
 - BC-Trainingsloop;

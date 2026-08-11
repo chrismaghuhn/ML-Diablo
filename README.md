@@ -74,6 +74,32 @@ PYTHONPATH=src python -m dxai smoke --episodes 2 --agent heuristic
 
 Trajektorien landen versioniert unter `artifacts/smoke/`.
 
+## Echte Read-only-Observation (M0.2)
+
+Der erste echte Engine-Slice startet eine separate C++-Probe gegen den exakt
+in `upstream.lock.toml` gepinnten DevilutionX-Commit. Sie liest Spielerzustand,
+sichtbare Gegner, ein begrenztes Tilefenster und Inventar aus und schreibt ein
+einzelnes `dxai.observation.v1`-JSON. Sie fuehrt noch keine Candidate-Aktion aus
+und stellt noch kein IPC bereit.
+
+Die Probe verwendet die Originaldaten aus einem lokalen, benutzerkontrollierten
+Diablo-Verzeichnis als `BasePath` und die losen Core-Assets aus dem
+DevilutionX-Build als separaten `CoreAssetsPath`. Beide Pfade sowie die
+Lizenz-/Assetgrenze sind im [M0.2-Runbook](docs/runbooks/M02_OBSERVATION.md)
+beschrieben.
+
+Windows-Beispiel:
+
+```powershell
+& .\scripts\run_observation_probe.ps1 `
+  -DiabloDataPath 'C:\GOG Games\Diablo' `
+  -DevilutionXCheckout 'C:\path\to\devilutionx-checkout' `
+  -DevilutionXBuild 'C:\path\to\devilutionx-build'
+```
+
+Die naechste Grenze ist M0.3: Engine-generierte legale Candidates, Auswahl
+allein per `candidate_id` und genau ein semantischer Engine-Schritt.
+
 ## Separater C++-Contract-Test
 
 ```bash

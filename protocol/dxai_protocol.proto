@@ -55,6 +55,14 @@ message ActionCandidate {
   repeated float features = 12;
 }
 
+message InventoryItem {
+  string container = 1;
+  uint32 slot = 2;
+  string type_id = 3;
+  bool identified = 4;
+  uint32 quantity = 5;
+}
+
 message PlayerState {
   Vec2 position = 1;
   sint32 hp = 2;
@@ -68,6 +76,7 @@ message PlayerState {
   string class_id = 10;
   sint32 dungeon_level = 11;
   map<string, float> attributes = 12;
+  repeated InventoryItem inventory = 13;
 }
 
 message EntityState {

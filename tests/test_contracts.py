@@ -6,7 +6,13 @@ import pytest
 
 from dxai.contracts.actions import ActionCandidate, ActionKind
 from dxai.contracts.common import Vec2
-from dxai.contracts.observations import Observation, TileCell
+from dxai.contracts.observations import (
+    InventoryContainer,
+    InventoryItem,
+    Observation,
+    PlayerState,
+    TileCell,
+)
 from dxai.contracts.results import StepResult
 from dxai.contracts.serialization import canonical_json
 from dxai.env.legal import assign_candidate_ids
@@ -65,6 +71,48 @@ def test_observation_round_trip() -> None:
         env.close()
     restored = Observation.from_dict(observation.to_dict())
     assert restored == observation
+
+
+def test_player_inventory_round_trip_and_visibility_safe_validation() -> None:
+    player = PlayerState(
+        position=Vec2(4, 5),
+        hp=20,
+        hp_max=20,
+        inventory=(
+            InventoryItem(
+                container=InventoryContainer.BELT,
+                slot=0,
+                type_id="HEALING_POTION",
+                identified=True,
+            ),
+            InventoryItem(
+                container=InventoryContainer.INVENTORY,
+                slot=2,
+                type_id="UNIDENTIFIED",
+                identified=False,
+            ),
+        ),
+    )
+    assert PlayerState.from_dict(player.to_dict()) == player
+
+    with pytest.raises(ValueError, match="inventory slot"):
+        PlayerState(
+            position=Vec2(0, 0),
+            hp=1,
+            hp_max=1,
+            inventory=(
+                InventoryItem(InventoryContainer.BELT, 0, "HEALING_POTION", True),
+                InventoryItem(InventoryContainer.BELT, 0, "MANA_POTION", True),
+            ),
+        ).validate()
+
+    with pytest.raises(ValueError, match="UNIDENTIFIED"):
+        InventoryItem(
+            container=InventoryContainer.INVENTORY,
+            slot=0,
+            type_id="SWORD",
+            identified=False,
+        ).validate()
 
 
 def test_unexplored_tile_cannot_leak_terrain_or_occupancy() -> None:

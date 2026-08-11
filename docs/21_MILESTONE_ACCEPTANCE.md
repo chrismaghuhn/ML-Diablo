@@ -59,6 +59,32 @@ Ein Milestone ist nur abgeschlossen, wenn:
 - [ ] Timeout-/Crashrecovery.
 - [ ] parallele Prozessinstanzen isoliert.
 
+## M0.2 — First Real Observation Slice
+
+This is an evidence checkpoint inside M0, not a declaration that the global
+M0 contract foundation is complete.
+
+- [x] exact upstream commit checked before the external probe run;
+- [x] Release probe builds as a separate executable without tracking
+  DevilutionX or proprietary Diablo data;
+- [x] player state, bounded visible tiles, visible entities and sanitized
+  inventory exported as `dxai.observation.v1`;
+- [x] raw probe stdout validates through the repository's local JSON Schema
+  registry;
+- [x] same seed produces byte-identical stdout across two clean runtime roots;
+- [x] missing asset data returns structured `ASSET_DATA_UNAVAILABLE` without a
+  UI dialog;
+- [x] Python client parses the real probe output and validates the immutable
+  observation contract;
+- [ ] legal candidate generation and candidate execution;
+- [ ] transition to the next decision boundary;
+- [ ] full reset/step state hashes, replay and IPC gates.
+
+Evidence from the local run on 2026-08-12: seed `123`, player `(79, 58)`,
+121 local tiles, 0 visible entities at the initial spawn and 6 inventory
+entries. The identical-output SHA-256 was
+`eadf3b0cb4beb8f7c8ca05c0746663de084430d95799908a24ab4b05cd531cb2`.
+
 ## M1 — Single Melee
 
 - [ ] Random, Safe und Aggressive Baselines reportet.

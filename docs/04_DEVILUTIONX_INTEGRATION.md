@@ -26,6 +26,44 @@ devilutionx-ai-env
 
 Der Binary enthält den kleinen Adapter und linkt gegen die lokale DevilutionX-Quelle. Python startet und überwacht ihn. Die normale UI-Anwendung bleibt getrennt.
 
+## M0.2 implementierter Slice: First Real Observation
+
+M0.2 verwendet eine separate `engine_adapter/observation_probe`-Executable.
+Sie patcht den Upstream-Checkout nicht und stellt noch keinen dauerhaften
+Environment-Prozess bereit. Die Probe initialisiert den aktiven Spieler ueber
+die vorhandenen Engine-Initialisierungsroutinen und exportiert genau eine
+read-only Observation fuer `combat.single_melee.v0`.
+
+Die Pfadtrennung ist absichtlich:
+
+```text
+DiabloDataPath  -> DevilutionX BasePath   -> DIABDAT.MPQ
+CoreAssetsPath  -> DevilutionX AssetsPath -> lose Build-Core-Assets
+RuntimePath     -> DLL-Suchpfad           -> libdevilutionx_so.dll
+```
+
+Der Exporter uebertraegt:
+
+- den aktiven Spieler mit Position, Ressourcen, Attributen und Inventar;
+- nur ein begrenztes Tilefenster mit sichtbarkeitsgeprueften Tiles;
+- nur sichtbare aktive Monster;
+- keine Roh-Engine-Container und keine unbekannten Item-Metadaten.
+
+Das v1-Observation-Schema verlangt eine nicht-leere Candidate-Liste. Bis zur
+Candidate-Implementierung liefert die Probe deshalb genau einen `WAIT`-
+Placeholder. Dieser ist nicht ausfuehrbar und ersetzt weder M0.3 noch die
+spatere IPC-Grenze.
+
+Im gepinnten Upstream ueberspringt `HeadlessMode` die UI, startet aber noch
+Levelmusik. Die Probe setzt daher direkt danach `gbMusicOn=false` und
+`gbSoundOn=false`, damit die Read-only-Initialisierung kein SDL-Audiogeraet
+voraussetzt. Gameplay-Regeln werden dadurch nicht veraendert.
+
+Die M0.2-Build- und Verifikationsschritte stehen in
+[`docs/runbooks/M02_OBSERVATION.md`](runbooks/M02_OBSERVATION.md). Die echte
+Engine-Ausgabe wird erst nach JSON-Schema- und Determinismuspruefung als
+Observation an Python uebergeben.
+
 ## Empfohlener Integrationspfad
 
 ### Schritt 1 — Upstream sauber pinnen

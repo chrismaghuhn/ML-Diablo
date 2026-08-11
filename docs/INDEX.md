@@ -42,6 +42,7 @@
 - [Forschungsquellen](RESEARCH_SOURCES.md)
 - [Codex-Handoff](CODEX_HANDOFF.md)
 - [Runbooks](runbooks/README.md)
+- [M0.2 First Real Observation](runbooks/M02_OBSERVATION.md)
 
 ## Architekturentscheidungen
 

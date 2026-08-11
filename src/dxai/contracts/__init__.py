@@ -3,6 +3,8 @@ from dxai.contracts.common import Vec2
 from dxai.contracts.observations import (
     EntityKind,
     EntityState,
+    InventoryContainer,
+    InventoryItem,
     Observation,
     PlayerState,
     TileCell,
@@ -14,6 +16,8 @@ __all__ = [
     "ActionKind",
     "EntityKind",
     "EntityState",
+    "InventoryContainer",
+    "InventoryItem",
     "Observation",
     "PlayerState",
     "StepResult",

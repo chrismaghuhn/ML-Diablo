@@ -3,6 +3,7 @@
 - [Lokales Setup](LOCAL_SETUP.md)
 - [Upstream Checkout](UPSTREAM_CHECKOUT.md)
 - [Upstream Upgrade](UPSTREAM_UPGRADE.md)
+- [M0.2 First Real Observation](M02_OBSERVATION.md)
 - [Demonstrationen](DEMO_COLLECTION.md)
 - [Training/Evaluation](TRAIN_AND_EVALUATE.md)
 - [Determinismusdebugging](DETERMINISM_DEBUG.md)

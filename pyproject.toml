@@ -57,8 +57,14 @@ exclude = ["build", "third_party"]
 
 [[tool.mypy.overrides]]
 module = ["torch", "torch.*"]
+follow_imports = "skip"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["dxai.models.candidate_q"]
 disable_error_code = ["misc", "untyped-decorator"]
+
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+ignore_missing_imports = true

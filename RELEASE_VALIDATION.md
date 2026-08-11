@@ -1,4 +1,4 @@
-# Release validation - 0.1.0 / M0-FIX / M0.1
+# Release validation - 0.1.0 / M0-FIX / M0.2
 
 Validated on **2026-08-11** in the Windows build environment. The archive remains
 an independent scaffold release; the local DevilutionX checkout and all generated
@@ -93,5 +93,30 @@ baseline. It does **not** validate a real DevilutionX observation/action bridge,
 controlled Combat fixture, determinism gate, proprietary assets, a completed BC/R2D3
 learner or a trained full-run agent.
 
-The next authorized work remains read-only observation extraction after the pinned
-build baseline. No raw engine command API or RL loop was added.
+The M0.1 scope statement above describes the pre-observation baseline. The M0.2
+follow-up below adds a separate read-only observation probe; no raw engine
+command API, candidate execution, IPC server or RL loop was added.
+
+## M0.2 follow-up: first real observation
+
+Validated on **2026-08-12** against the same pinned commit
+`07385842840437cc9a785b195f5b40b121eaeb1c` and a user-owned local Diablo data
+directory:
+
+```text
+Release observation probe build: passed
+real observation: dxai.observation.v1
+player: (79, 58)
+local tiles: 121
+visible entities: 0 at initial spawn
+inventory entries: 6
+same-seed stdout determinism: passed
+missing-assets structured error: passed
+raw JSON Schema registry validation: passed
+Python probe client contract validation: passed
+```
+
+The identical UTF-8 stdout hash for two seed-123 runs was
+`eadf3b0cb4beb8f7c8ca05c0746663de084430d95799908a24ab4b05cd531cb2`.
+M0.3 remains the next boundary for engine-generated legal candidates and one
+semantic candidate step.

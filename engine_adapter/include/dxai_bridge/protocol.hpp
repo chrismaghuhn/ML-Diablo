@@ -53,6 +53,14 @@ struct ActionCandidate {
     std::string label;
 };
 
+struct InventoryItem {
+    std::string container;
+    std::uint32_t slot {};
+    std::string typeId;
+    bool identified {};
+    std::uint32_t quantity { 1 };
+};
+
 struct PlayerState {
     Vec2 position;
     std::int32_t hp {};
@@ -63,6 +71,7 @@ struct PlayerState {
     std::int32_t dungeonLevel { 1 };
     std::int64_t experience {};
     std::int64_t gold {};
+    std::vector<InventoryItem> inventory;
 };
 
 struct EntityState {
