@@ -1,0 +1,47 @@
+schema_version: dxai.training_config.v1
+algorithm: r2d3_style_candidate_q
+status: starter_hyperparameters_not_tuned_for_diablo
+value_learning:
+  gamma: 0.997
+  n_step: 5
+  double_q: true
+  dueling: true
+  value_rescaling: signed_hyperbolic
+sequence:
+  length: 80
+  burn_in: 40
+  overlap: 40
+replay:
+  agent_capacity_sequences: 100000
+  demonstration_capacity_sequences: 20000
+  prioritized_alpha: 0.6
+  priority_max_mean_eta: 0.9
+  importance_beta_start: 0.4
+  importance_beta_end: 1.0
+  demonstration_ratio: 0.0078125  # 1/128; sweep, do not assume optimal
+  demonstration_ratio_sweep: [0.0, 0.001953125, 0.00390625, 0.0078125, 0.015625, 0.03125]
+model:
+  recurrent_core: lstm
+  hidden_dim: 128
+  candidate_hidden_dim: 96
+  candidate_q_scorer: shared_dueling
+optimization:
+  batch_size: 64
+  learning_rate: 0.0002
+  target_update_steps: 2500
+  gradient_clip_norm: 40.0
+distributed:
+  actor_count: 8
+  process_per_engine_instance: true
+  epsilon_family:
+    base: 0.4
+    exponent: 8.0
+auxiliary_losses:
+  behavior_cloning_on_demo_samples:
+    initial_weight: 0.05
+    final_weight: 0.0
+    decay_steps: 250000
+notes:
+  - This is R2D3-inspired, not a claim of reproducing the paper exactly.
+  - Tune demo ratio first; the original R2D3 study found small non-zero ratios important.
+  - Never train before the environment determinism and observability gates pass.

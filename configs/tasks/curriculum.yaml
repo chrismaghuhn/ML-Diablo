@@ -1,0 +1,34 @@
+schema_version: dxai.curriculum.v1
+promotion_rule:
+  minimum_evaluation_episodes: 128
+  minimum_success_rate: 0.90
+  maximum_regression_vs_previous_checkpoint: 0.02
+  require_all_contract_gates: true
+stages:
+  - id: M0
+    task: bridge.contract.v0
+    objective: deterministic reset-step-replay contract
+  - id: M1
+    task: combat.single_melee.v0
+    objective: one melee target, fixed loadout
+  - id: M2
+    task: combat.room.v0
+    objective: multiple enemies, potion timing, retreat
+  - id: M3
+    task: explore.find_stairs.v0
+    objective: unknown floor navigation with memory
+  - id: M4
+    task: loot.equipment.v0
+    objective: pickup, compare, equip, discard
+  - id: M5
+    task: town.loop.v0
+    objective: sell, buy, repair, return
+  - id: M6
+    task: floor.clear.v0
+    objective: integrated one-floor behavior
+  - id: M7
+    task: multilevel.run.v0
+    objective: persistent progression across floors and town trips
+  - id: M8
+    task: fullrun.warrior.normal.v0
+    objective: fresh Warrior to Diablo kill

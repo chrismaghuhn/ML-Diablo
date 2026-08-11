@@ -1,0 +1,20 @@
+schema_version: dxai.task_config.v1
+task_id: combat.single_melee.v0
+milestone: M1
+character:
+  class: WARRIOR
+  level: 1
+  loadout_policy: fixed_test_fixture
+enemy:
+  count: 1
+  family: melee
+success: target_dead_and_player_alive
+failure:
+  - player_dead
+  - decision_limit
+max_decisions: 160
+reward_version: combat.reward.v1
+seed_partitions:
+  train: [0, 9999]
+  validation: [10000, 10031]
+  test: [20000, 20127]

@@ -1,0 +1,33 @@
+schema_version: dxai.evaluation_config.v1
+policy:
+  exploration: disabled
+  deterministic_tie_breaking: true
+checkpoints:
+  compare_against:
+    - random
+    - scripted_safe
+    - scripted_aggressive
+    - behavior_cloning
+    - recurrent_ppo
+    - r2d2_no_demos
+    - r2d3_style
+statistics:
+  seeds_per_task: 128
+  bootstrap_confidence_interval: 0.95
+  report_median: true
+  report_mean: true
+metrics:
+  - success_rate
+  - survival_rate
+  - return
+  - decisions
+  - wall_clock_seconds
+  - damage_dealt
+  - damage_taken
+  - potion_efficiency
+  - illegal_action_count
+  - engine_fault_count
+hard_failures:
+  illegal_action_count: 0
+  engine_fault_count: 0
+  hidden_information_violation_count: 0

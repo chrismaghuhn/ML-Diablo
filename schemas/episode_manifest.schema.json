@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/dxai/episode_manifest.schema.json",
+  "title": "DXAI episode manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "episode_id", "task_id", "seed", "agent_name",
+    "data_source", "step_count", "total_reward", "outcome", "terminated",
+    "truncated", "trajectory_file", "trajectory_sha256", "created_at_utc",
+    "contract_versions", "engine"
+  ],
+  "properties": {
+    "schema_version": {"const": "dxai.episode_manifest.v1"},
+    "episode_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "agent_name": {"type": "string", "minLength": 1},
+    "data_source": {"enum": ["AGENT", "DEMONSTRATION", "SCRIPTED", "HUMAN"]},
+    "step_count": {"type": "integer", "minimum": 0},
+    "total_reward": {"type": "number"},
+    "outcome": {"type": "string"},
+    "terminated": {"type": "boolean"},
+    "truncated": {"type": "boolean"},
+    "trajectory_file": {"type": "string", "minLength": 1},
+    "trajectory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "contract_versions": {"type": "object", "additionalProperties": {"type": "string"}},
+    "engine": {"type": "object"}
+  }
+}

@@ -1,0 +1,121 @@
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+
+from dxai.contracts.actions import ActionCandidate, ActionKind
+from dxai.contracts.common import Vec2
+from dxai.contracts.observations import Observation, TileCell
+from dxai.contracts.results import StepResult
+from dxai.contracts.serialization import canonical_json
+from dxai.env.legal import assign_candidate_ids
+from dxai.env.mock import DeterministicCombatEnv
+
+
+def test_action_round_trip_and_validation() -> None:
+    action = ActionCandidate(
+        candidate_id=3,
+        kind=ActionKind.CAST_SPELL_AT_ENTITY,
+        target_entity_id=99,
+        spell_id=7,
+        label="Firebolt",
+        features=(0.2, 0.3),
+    )
+    assert ActionCandidate.from_dict(action.to_dict()) == action
+    with pytest.raises(ValueError, match="requires target_entity_id"):
+        ActionCandidate(0, ActionKind.ATTACK_ENTITY).validate()
+    with pytest.raises(ValueError, match="forbids payload"):
+        ActionCandidate(0, ActionKind.WAIT, target_entity_id=1).validate()
+    with pytest.raises(ValueError, match="finite"):
+        ActionCandidate(0, ActionKind.WAIT, features=(float("nan"),)).validate()
+    ActionCandidate(
+        0,
+        ActionKind.EQUIP_ITEM,
+        inventory_slot=4,
+        equipment_slot=1,
+    ).validate()
+
+
+def test_candidate_ids_are_deterministic_and_dense() -> None:
+    unordered = [
+        ActionCandidate(-1, ActionKind.MOVE_TO_TILE, target_tile=Vec2(3, 2)),
+        ActionCandidate(-1, ActionKind.WAIT),
+        ActionCandidate(-1, ActionKind.MOVE_TO_TILE, target_tile=Vec2(2, 3)),
+    ]
+    assigned = assign_candidate_ids(unordered)
+    assert [item.candidate_id for item in assigned] == [0, 1, 2]
+    assert [item.semantic_key() for item in assigned] == sorted(
+        item.semantic_key() for item in unordered
+    )
+
+
+def test_duplicate_semantic_candidates_are_rejected() -> None:
+    with pytest.raises(ValueError, match="duplicate semantic action"):
+        assign_candidate_ids(
+            [ActionCandidate(-1, ActionKind.WAIT), ActionCandidate(-1, ActionKind.WAIT)]
+        )
+
+
+def test_observation_round_trip() -> None:
+    env = DeterministicCombatEnv()
+    try:
+        observation = env.reset(seed=9, task_id="combat.single_melee.v0")
+    finally:
+        env.close()
+    restored = Observation.from_dict(observation.to_dict())
+    assert restored == observation
+
+
+def test_unexplored_tile_cannot_leak_terrain_or_occupancy() -> None:
+    with pytest.raises(ValueError, match="terrain_id=-1"):
+        TileCell(
+            relative=Vec2(1, 1),
+            terrain_id=1,
+            walkable=False,
+            visible=False,
+            explored=False,
+        ).validate()
+    with pytest.raises(ValueError, match="occupancy"):
+        TileCell(
+            relative=Vec2(1, 1),
+            terrain_id=1,
+            walkable=True,
+            visible=False,
+            explored=True,
+            occupied=True,
+        ).validate()
+
+
+def test_candidate_is_bound_to_current_observation() -> None:
+    env = DeterministicCombatEnv()
+    try:
+        observation = env.reset(seed=3, task_id="combat.single_melee.v0")
+        with pytest.raises(KeyError):
+            observation.action_by_id(999)
+        broken = replace(
+            observation,
+            legal_actions=(replace(observation.legal_actions[0], candidate_id=1),),
+        )
+        with pytest.raises(ValueError, match="dense"):
+            broken.validate()
+    finally:
+        env.close()
+
+
+def test_strict_json_and_step_result_reject_non_finite_values() -> None:
+    with pytest.raises(ValueError):
+        canonical_json({"reward": float("nan")})
+    env = DeterministicCombatEnv()
+    try:
+        observation = env.reset(seed=2, task_id="combat.single_melee.v0")
+    finally:
+        env.close()
+    with pytest.raises(ValueError, match="finite"):
+        StepResult(
+            observation=observation,
+            reward=float("inf"),
+            terminated=False,
+            truncated=False,
+            info={},
+        ).validate()

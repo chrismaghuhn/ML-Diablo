@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/dxai/observation.schema.json",
+  "title": "DXAI observation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "episode_id", "task_id", "seed", "step_id",
+    "engine_tick", "decision_reason", "player", "local_tiles", "entities",
+    "legal_actions", "recent_events"
+  ],
+  "properties": {
+    "schema_version": {"const": "dxai.observation.v1"},
+    "episode_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "step_id": {"type": "integer", "minimum": 0},
+    "engine_tick": {"type": "integer", "minimum": 0},
+    "decision_reason": {"type": "string", "minLength": 1},
+    "player": {"$ref": "#/$defs/player"},
+    "local_tiles": {"type": "array", "items": {"$ref": "#/$defs/tile"}},
+    "entities": {"type": "array", "items": {"$ref": "#/$defs/entity"}},
+    "legal_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "action.schema.json"}
+    },
+    "recent_events": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "vec2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {"x": {"type": "integer"}, "y": {"type": "integer"}}
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": {"type": "number"}
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "position", "hp", "hp_max", "mana", "mana_max", "level",
+        "experience", "gold", "potions", "class_id", "dungeon_level", "attributes"
+      ],
+      "properties": {
+        "position": {"$ref": "#/$defs/vec2"},
+        "hp": {"type": "integer", "minimum": 0},
+        "hp_max": {"type": "integer", "minimum": 1},
+        "mana": {"type": "integer", "minimum": 0},
+        "mana_max": {"type": "integer", "minimum": 0},
+        "level": {"type": "integer", "minimum": 1},
+        "experience": {"type": "integer", "minimum": 0},
+        "gold": {"type": "integer", "minimum": 0},
+        "potions": {"type": "integer", "minimum": 0},
+        "class_id": {"type": "string", "minLength": 1},
+        "dungeon_level": {"type": "integer", "minimum": 0},
+        "attributes": {"$ref": "#/$defs/attributes"}
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_id", "kind", "position", "type_id", "hp", "hp_max",
+        "hostile", "visible", "attributes"
+      ],
+      "properties": {
+        "entity_id": {"type": "integer", "minimum": 0},
+        "kind": {"enum": ["MONSTER", "ITEM", "OBJECT", "MISSILE", "NPC", "STAIRS"]},
+        "position": {"$ref": "#/$defs/vec2"},
+        "type_id": {"type": "string", "minLength": 1},
+        "hp": {"type": ["integer", "null"], "minimum": 0},
+        "hp_max": {"type": ["integer", "null"], "minimum": 1},
+        "hostile": {"type": "boolean"},
+        "visible": {"const": true},
+        "attributes": {"$ref": "#/$defs/attributes"}
+      }
+    },
+    "tile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative", "terrain_id", "walkable", "visible", "explored", "occupied", "hazard"],
+      "properties": {
+        "relative": {"$ref": "#/$defs/vec2"},
+        "terrain_id": {"type": "integer", "minimum": -1},
+        "walkable": {"type": "boolean"},
+        "visible": {"type": "boolean"},
+        "explored": {"type": "boolean"},
+        "occupied": {"type": "boolean"},
+        "hazard": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+schema_version: dxai.training_config.v1
+algorithm: recurrent_candidate_ppo
+role: comparison_baseline_not_primary_recommendation
+rollout_steps: 256
+num_environments: 8
+gamma: 0.997
+gae_lambda: 0.95
+clip_range: 0.2
+entropy_coefficient: 0.01
+value_coefficient: 0.5
+learning_rate: 0.00025
+recurrent_core: lstm
+candidate_policy: masked_shared_scorer
+notes:
+  - Maintained to measure whether off-policy replay complexity is justified.
+  - Demonstration integration must be evaluated separately and fairly.

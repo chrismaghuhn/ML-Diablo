@@ -1,0 +1,9 @@
+schema_version: dxai.env_config.v1
+environment: dxai.env.mock:DeterministicCombatEnv
+max_steps: 160
+observation_version: dxai.observation.v1
+action_version: dxai.action.v1
+record_trajectories: true
+notes:
+  - Contract-only environment; not a Diablo rules approximation.
+  - Unknown tiles must not reveal terrain, occupancy, entities, or future RNG.

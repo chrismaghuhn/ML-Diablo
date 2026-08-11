@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devilutionx-ai-lab"
+version = "0.1.0"
+description = "Research scaffold for a structured ML agent around DevilutionX"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "DevilutionX AI Lab contributors" }]
+dependencies = []
+
+[project.optional-dependencies]
+ml = [
+  "numpy>=2.0",
+  "torch>=2.5",
+  "PyYAML>=6.0",
+]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "jsonschema>=4.22",
+  "referencing>=0.35",
+  "PyYAML>=6.0",
+  "mypy>=1.11",
+  "ruff>=0.8",
+  "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+dxai = "dxai.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+exclude = ["build", "third_party"]
+
+[[tool.mypy.overrides]]
+module = ["torch", "torch.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["dxai.models.candidate_q"]
+disable_error_code = ["misc", "untyped-decorator"]

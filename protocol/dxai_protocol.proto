@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package dxai.v1;
+
+import "google/protobuf/struct.proto";
+
+message Vec2 {
+  sint32 x = 1;
+  sint32 y = 2;
+}
+
+enum ActionKind {
+  ACTION_KIND_UNSPECIFIED = 0;
+  WAIT = 1;
+  MOVE_TO_TILE = 2;
+  ATTACK_ENTITY = 3;
+  CAST_SPELL_AT_ENTITY = 4;
+  CAST_SPELL_AT_TILE = 5;
+  USE_BELT_SLOT = 6;
+  PICK_UP_ITEM = 7;
+  OPERATE_OBJECT = 8;
+  EQUIP_ITEM = 9;
+  UNEQUIP_ITEM = 10;
+  DROP_ITEM = 11;
+  BUY_ITEM = 12;
+  SELL_ITEM = 13;
+  REPAIR_ITEM = 14;
+  ALLOCATE_STAT = 15;
+  TAKE_STAIRS = 16;
+  RETURN_TO_TOWN = 17;
+}
+
+message OptionalUint32 {
+  bool present = 1;
+  uint32 value = 2;
+}
+
+message OptionalVec2 {
+  bool present = 1;
+  Vec2 value = 2;
+}
+
+message ActionCandidate {
+  uint32 candidate_id = 1;
+  ActionKind kind = 2;
+  OptionalUint32 target_entity_id = 3;
+  OptionalVec2 target_tile = 4;
+  OptionalUint32 inventory_slot = 5;
+  OptionalUint32 equipment_slot = 6;
+  OptionalUint32 belt_slot = 7;
+  OptionalUint32 spell_id = 8;
+  OptionalUint32 store_item_id = 9;
+  OptionalUint32 stat_id = 10;
+  string label = 11;
+  repeated float features = 12;
+}
+
+message PlayerState {
+  Vec2 position = 1;
+  sint32 hp = 2;
+  sint32 hp_max = 3;
+  sint32 mana = 4;
+  sint32 mana_max = 5;
+  sint32 level = 6;
+  int64 experience = 7;
+  int64 gold = 8;
+  sint32 potions = 9;
+  string class_id = 10;
+  sint32 dungeon_level = 11;
+  map<string, float> attributes = 12;
+}
+
+message EntityState {
+  uint32 entity_id = 1;
+  string kind = 2;
+  Vec2 position = 3;
+  string type_id = 4;
+  OptionalUint32 hp = 5;
+  OptionalUint32 hp_max = 6;
+  bool hostile = 7;
+  map<string, float> attributes = 8;
+}
+
+message TileCell {
+  Vec2 relative = 1;
+  sint32 terrain_id = 2; // -1 means unknown
+  bool walkable = 3;
+  bool visible = 4;
+  bool explored = 5;
+  bool occupied = 6;
+  float hazard = 7;
+}
+
+message Observation {
+  string schema_version = 1;
+  string episode_id = 2;
+  string task_id = 3;
+  uint64 seed = 4;
+  uint64 step_id = 5;
+  uint64 engine_tick = 6;
+  string decision_reason = 7;
+  PlayerState player = 8;
+  repeated TileCell local_tiles = 9;
+  repeated EntityState entities = 10;
+  repeated ActionCandidate legal_actions = 11;
+  repeated string recent_events = 12;
+}
+
+message ResetRequest {
+  string protocol_version = 1;
+  uint64 request_id = 2;
+  uint64 seed = 3;
+  string task_id = 4;
+  map<string, string> options = 5;
+}
+
+message ResetResponse {
+  uint64 request_id = 1;
+  Observation observation = 2;
+  string engine_revision = 3;
+  string error_code = 4;
+  string error_message = 5;
+}
+
+message StepRequest {
+  string protocol_version = 1;
+  uint64 request_id = 2;
+  string episode_id = 3;
+  uint64 expected_step_id = 4;
+  uint32 candidate_id = 5;
+}
+
+message StepResponse {
+  uint64 request_id = 1;
+  Observation observation = 2;
+  double reward = 3;
+  bool terminated = 4;
+  bool truncated = 5;
+  google.protobuf.Struct info = 6;
+  string error_code = 7;
+  string error_message = 8;
+}
+
+message HealthRequest {
+  string protocol_version = 1;
+}
+
+message HealthResponse {
+  string protocol_version = 1;
+  string engine_revision = 2;
+  string observation_version = 3;
+  string action_version = 4;
+  bool ready = 5;
+  string detail = 6;
+}
+
+service DevilutionXEnvironment {
+  rpc Health(HealthRequest) returns (HealthResponse);
+  rpc Reset(ResetRequest) returns (ResetResponse);
+  rpc Step(StepRequest) returns (StepResponse);
+}

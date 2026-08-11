@@ -1,0 +1,27 @@
+schema_version: dxai.training_config.v1
+algorithm: recurrent_candidate_behavior_cloning
+input:
+  observation_version: dxai.observation.v1
+  action_version: dxai.action.v1
+sequence:
+  length: 80
+  burn_in: 40
+model:
+  state_encoder: object_grid_reference_v1
+  recurrent_core: lstm
+  hidden_dim: 128
+  candidate_scorer: shared_mlp
+optimizer:
+  name: adamw
+  learning_rate: 0.0002
+  weight_decay: 0.00001
+  gradient_clip_norm: 40.0
+loss:
+  candidate_cross_entropy: 1.0
+  legal_action_only: true
+evaluation:
+  early_stop_metric: validation_success_rate
+  seed_isolation_required: true
+notes:
+  - BC is initialization and a baseline, not the final agent.
+  - Keep failed/recovered and suboptimal demonstrations; label source and quality.

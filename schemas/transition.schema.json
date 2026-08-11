@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/dxai/transition.schema.json",
+  "title": "DXAI transition v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "episode_id", "task_id", "seed", "step_id",
+    "observation", "action", "reward", "next_observation", "terminated",
+    "truncated", "info", "behavior"
+  ],
+  "properties": {
+    "schema_version": {"const": "dxai.transition.v1"},
+    "episode_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "step_id": {"type": "integer", "minimum": 0},
+    "observation": {"$ref": "observation.schema.json"},
+    "action": {"$ref": "action.schema.json"},
+    "reward": {"type": "number"},
+    "next_observation": {"$ref": "observation.schema.json"},
+    "terminated": {"type": "boolean"},
+    "truncated": {"type": "boolean"},
+    "info": {"type": "object"},
+    "behavior": {"type": "object"}
+  }
+}

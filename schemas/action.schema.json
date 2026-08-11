@@ -1,0 +1,677 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/dxai/action.schema.json",
+  "title": "DXAI semantic action candidate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "kind",
+    "target_entity_id",
+    "target_tile",
+    "inventory_slot",
+    "equipment_slot",
+    "belt_slot",
+    "spell_id",
+    "store_item_id",
+    "stat_id",
+    "label",
+    "features"
+  ],
+  "properties": {
+    "candidate_id": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "WAIT",
+        "MOVE_TO_TILE",
+        "ATTACK_ENTITY",
+        "CAST_SPELL_AT_ENTITY",
+        "CAST_SPELL_AT_TILE",
+        "USE_BELT_SLOT",
+        "PICK_UP_ITEM",
+        "OPERATE_OBJECT",
+        "EQUIP_ITEM",
+        "UNEQUIP_ITEM",
+        "DROP_ITEM",
+        "BUY_ITEM",
+        "SELL_ITEM",
+        "REPAIR_ITEM",
+        "ALLOCATE_STAT",
+        "TAKE_STAIRS",
+        "RETURN_TO_TOWN"
+      ]
+    },
+    "target_entity_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "target_tile": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/vec2"
+        }
+      ]
+    },
+    "inventory_slot": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "equipment_slot": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "belt_slot": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "spell_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "store_item_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "stat_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "label": {
+      "type": "string"
+    },
+    "features": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "kind": {
+          "const": "WAIT"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "MOVE_TO_TILE"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "$ref": "#/$defs/vec2"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "ATTACK_ENTITY"
+        },
+        "target_entity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "CAST_SPELL_AT_ENTITY"
+        },
+        "target_entity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "CAST_SPELL_AT_TILE"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "$ref": "#/$defs/vec2"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "USE_BELT_SLOT"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "PICK_UP_ITEM"
+        },
+        "target_entity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "OPERATE_OBJECT"
+        },
+        "target_entity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "EQUIP_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "UNEQUIP_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "DROP_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "BUY_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "SELL_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "REPAIR_ITEM"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "ALLOCATE_STAT"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "TAKE_STAIRS"
+        },
+        "target_entity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "RETURN_TO_TOWN"
+        },
+        "target_entity_id": {
+          "type": "null"
+        },
+        "target_tile": {
+          "type": "null"
+        },
+        "inventory_slot": {
+          "type": "null"
+        },
+        "equipment_slot": {
+          "type": "null"
+        },
+        "belt_slot": {
+          "type": "null"
+        },
+        "spell_id": {
+          "type": "null"
+        },
+        "store_item_id": {
+          "type": "null"
+        },
+        "stat_id": {
+          "type": "null"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "vec2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
