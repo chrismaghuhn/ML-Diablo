@@ -39,6 +39,25 @@ and the `dxai.probe.step.v1` evidence envelope. Persistent IPC, reset
 isolation, replay, multi-step service lifetime, broader action families and
 the global M0 gates remain open.
 
+## M0.4 Evidence checkpoint
+
+The repository now contains a persistent one-episode native worker and Python
+cold-reset manager. The `--env-stdio` mode exposes strict
+`dxai.process.v1` JSON-Lines with a 1 MiB body limit, explicit `READY`,
+`EPISODE_ACTIVE` and `FAULTED` states, Health/Reset/Step/Error responses,
+process-unique episode IDs, step/candidate identity checks, a bounded 128-entry
+request cache, and stdout/stderr separation. The worker reuses the M0.3
+initialization, candidate generation, semantic `MakePlrPath` execution,
+decision-boundary advancement and observation serialization paths.
+
+The Python manager replaces the worker for every Reset and treats timeout,
+EOF, crash and malformed responses as unusable-worker conditions. M0.4 does
+not add rewards, terminal flags, learner paths, warm reset, broader actions,
+parallel workers or replay storage. The repository-only tests and builds are
+verifiable; the 32-step real-asset gate remains open until the user-owned
+DevilutionX runtime, core assets and Diablo data are configured. See
+[`docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md`](runbooks/M04_PERSISTENT_ENVIRONMENT.md).
+
 ## M0.5 — Durchsatz und Replay
 
 1. 1000 Episoden ohne Ressourcenleck.

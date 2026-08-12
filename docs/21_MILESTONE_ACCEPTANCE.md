@@ -120,6 +120,33 @@ contract foundation complete.
 - [ ] broader action families, terminal handling, combat, town, loot and
   exploration.
 
+## M0.4 - Persistent Environment Lifecycle
+
+This is an implementation checkpoint inside M0. It proves the persistent
+process contract and Python cold-reset boundary, not the global M0 acceptance.
+
+- [x] native `--env-stdio` worker reuses the M0.3 initialization, candidate,
+  semantic execution, advancement and observation paths;
+- [x] strict `dxai.process.v1` UTF-8 JSON-Lines framing with a 1 MiB limit and
+  closed Health/Reset/Step/Error fields;
+- [x] explicit `READY`, `EPISODE_ACTIVE` and `FAULTED` lifecycle states;
+- [x] process-unique episode IDs, exact step sequencing and candidate-set
+  identity validation before native mutation;
+- [x] bounded 128-entry request cache with exact duplicate replay and
+  changed-payload/evicted-ID rejection;
+- [x] Python Health-before-Reset manager, cold worker replacement, cleanup,
+  timeout/EOF/crash/malformed-response unusable state;
+- [x] no reward, terminal, learner, warm-reset or broader-action fields;
+- [x] repository-only Python/native tests, schema validation, lint, types and
+  Release builds pass;
+- [x] 32 successful real Steps in one PID using configured user-owned assets;
+- [x] real same-seed semantic trace equality and A -> B -> A contamination
+  evidence;
+- [x] duplicate exactly-once replay, changed-payload rejection and
+  wrong-step/invalid-candidate non-mutation oracles;
+- [x] stale-episode rejection, process cleanup and protocol-only stdout;
+- [ ] global M0 reset/replay/throughput/soak acceptance.
+
 ## M1 — Single Melee
 
 - [ ] Random, Safe und Aggressive Baselines reportet.

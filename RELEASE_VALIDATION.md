@@ -118,5 +118,38 @@ Python probe client contract validation: passed
 
 The identical UTF-8 stdout hash for two seed-123 runs was
 `eadf3b0cb4beb8f7c8ca05c0746663de084430d95799908a24ab4b05cd531cb2`.
-M0.3 remains the next boundary for engine-generated legal candidates and one
-semantic candidate step.
+The M0.3 semantic-step gate and the M0.4 persistent lifecycle gate are covered
+by the follow-up evidence below.
+
+## M0.4: Real-asset acceptance gate
+
+Validated on **2026-08-12** against the pinned DevilutionX revision
+`07385842840437cc9a785b195f5b40b121eaeb1c`, a clean external Release build,
+and user-owned local Diablo data. The repository contains none of those
+external inputs.
+
+```text
+Health/Handshake:             passed
+Reset(seed=123):              passed; position (79,58), engine_tick 0
+32 same-worker Steps:         passed; step_id 0 -> 32, engine_tick 0 -> 320
+PID continuity:               passed
+Duplicate exactly-once:       passed; replay response byte-equivalent
+Changed request-ID payload:   passed; REQUEST_ID_REUSE
+Wrong-step oracle:            passed; STALE_STEP and equal control hash
+Invalid-candidate oracle:     passed; INVALID_CANDIDATE and equal control hash
+Stale episode/new IDs:        passed
+A -> B -> A reset:            passed
+Independent same-seed traces: passed; exact canonical equality
+stdout/stderr purity:         passed; protocol-only stdout
+Worker cleanup:               passed; old workers reaped, close idempotent
+```
+
+The 32-step canonical trace SHA-256 was
+`4e906aa70e2ad64ec790074d55a15802192aae8b1508708551a65a476825d336` in both
+independent runs. The A1/A2 eight-step cold-reset traces both hashed to
+`92b4939801f88937fecaea40c0d172aca36b98fa0ec27cd8f0deea5b603cc33a`.
+Only documented lifecycle fields were normalized; player/world state,
+candidate sets, actions and engine ticks remained in the hash.
+
+This evidence closes the M0.4 lifecycle gate only. Global M0, M0.5, rewards,
+terminal semantics, replay learning, throughput and ML remain open.

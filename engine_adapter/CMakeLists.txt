@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(dxai_bridge_contract LANGUAGES CXX)
 
-add_library(dxai_bridge_contract STATIC src/validation.cpp)
+add_library(dxai_bridge_contract STATIC src/validation.cpp src/process_protocol.cpp)
 target_include_directories(dxai_bridge_contract PUBLIC include)
 target_compile_features(dxai_bridge_contract PUBLIC cxx_std_20)
 set_target_properties(dxai_bridge_contract PROPERTIES CXX_EXTENSIONS OFF)
@@ -16,3 +16,7 @@ enable_testing()
 add_executable(dxai_bridge_contract_test tests/contract_test.cpp)
 target_link_libraries(dxai_bridge_contract_test PRIVATE dxai_bridge_contract)
 add_test(NAME dxai_bridge_contract_test COMMAND dxai_bridge_contract_test)
+
+add_executable(dxai_process_protocol_test tests/process_protocol_test.cpp)
+target_link_libraries(dxai_process_protocol_test PRIVATE dxai_bridge_contract)
+add_test(NAME dxai_process_protocol_test COMMAND dxai_process_protocol_test)

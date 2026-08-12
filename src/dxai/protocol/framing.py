@@ -8,6 +8,7 @@ from typing import Any, NoReturn
 from dxai.contracts.serialization import canonical_json_bytes
 
 MAX_FRAME_BYTES = 16 * 1024 * 1024
+MAX_PROCESS_FRAME_BYTES = 1 * 1024 * 1024
 _HEADER = struct.Struct(">I")
 
 
@@ -22,6 +23,65 @@ def encode_frame(payload: dict[str, Any], *, max_frame_bytes: int = MAX_FRAME_BY
 
 def _reject_non_json_number(value: str) -> NoReturn:
     raise ValueError(f"non-JSON numeric constant {value!r} is forbidden")
+
+
+def _reject_duplicate_object_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object field {key!r}")
+        result[key] = value
+    return result
+
+
+def encode_process_line(
+    payload: dict[str, Any], *, max_frame_bytes: int = MAX_PROCESS_FRAME_BYTES
+) -> bytes:
+    """Encode one strict ``dxai.process.v1`` JSON-lines message."""
+
+    if max_frame_bytes <= 0:
+        raise ValueError("max_frame_bytes must be positive")
+    body = canonical_json_bytes(payload)
+    if len(body) > max_frame_bytes:
+        raise ValueError(f"process frame exceeds {max_frame_bytes} bytes (1 MiB limit)")
+    return body + b"\n"
+
+
+def parse_process_line(
+    line: bytes, *, max_frame_bytes: int = MAX_PROCESS_FRAME_BYTES
+) -> dict[str, Any]:
+    """Decode one strict UTF-8 JSON-lines message.
+
+    The subprocess manager reads exactly one physical line before calling this
+    function. A single trailing LF/CRLF is accepted; any additional JSON value
+    remains invalid because ``json.loads`` rejects trailing data.
+    """
+
+    if max_frame_bytes <= 0:
+        raise ValueError("max_frame_bytes must be positive")
+    if line.endswith(b"\n"):
+        line = line[:-1]
+        if line.endswith(b"\r"):
+            line = line[:-1]
+    if len(line) > max_frame_bytes:
+        raise ValueError(f"process frame exceeds {max_frame_bytes} bytes (1 MiB limit)")
+    try:
+        text = line.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise ValueError("process frame is not valid UTF-8") from error
+    if not text.strip():
+        raise ValueError("process frame must not be blank")
+    try:
+        value: Any = json.loads(
+            text,
+            object_pairs_hook=_reject_duplicate_object_keys,
+            parse_constant=_reject_non_json_number,
+        )
+    except (TypeError, ValueError, json.JSONDecodeError) as error:
+        raise ValueError("process frame is not one JSON object") from error
+    if not isinstance(value, dict):
+        raise ValueError("process frame must contain one JSON object")
+    return value
 
 
 @dataclass(slots=True)
@@ -44,7 +104,7 @@ class FrameDecoder:
             frame_end = _HEADER.size + length
             if len(self._buffer) < frame_end:
                 break
-            body = bytes(self._buffer[_HEADER.size:frame_end])
+            body = bytes(self._buffer[_HEADER.size : frame_end])
             del self._buffer[:frame_end]
             value = json.loads(body, parse_constant=_reject_non_json_number)
             if not isinstance(value, dict):

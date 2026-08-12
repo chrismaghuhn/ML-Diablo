@@ -1,4 +1,23 @@
-from dxai.protocol.framing import FrameDecoder, encode_frame
+from dxai.protocol.framing import (
+    MAX_PROCESS_FRAME_BYTES,
+    FrameDecoder,
+    encode_frame,
+    encode_process_line,
+    parse_process_line,
+)
+from dxai.protocol.lifecycle import (
+    ADAPTER_REVISION,
+    BUILD_FINGERPRINT,
+    DEVILUTIONX_REVISION,
+    PROCESS_PROTOCOL_VERSION,
+    ProcessErrorCode,
+    ProcessLifecycle,
+    ProcessProtocolError,
+    ProcessState,
+    RequestCache,
+    parse_process_request,
+    parse_process_response,
+)
 from dxai.protocol.messages import (
     ACTION_VERSION,
     OBSERVATION_VERSION,
@@ -11,12 +30,26 @@ from dxai.protocol.messages import (
 
 __all__ = [
     "ACTION_VERSION",
+    "ADAPTER_REVISION",
+    "BUILD_FINGERPRINT",
+    "DEVILUTIONX_REVISION",
+    "MAX_PROCESS_FRAME_BYTES",
     "OBSERVATION_VERSION",
+    "PROCESS_PROTOCOL_VERSION",
     "PROTOCOL_VERSION",
     "FaultCode",
     "FrameDecoder",
     "Handshake",
+    "ProcessErrorCode",
+    "ProcessLifecycle",
+    "ProcessProtocolError",
+    "ProcessState",
+    "RequestCache",
     "ResetRequest",
     "StepRequest",
     "encode_frame",
+    "encode_process_line",
+    "parse_process_line",
+    "parse_process_request",
+    "parse_process_response",
 ]

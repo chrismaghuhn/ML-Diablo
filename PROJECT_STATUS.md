@@ -16,6 +16,8 @@ Version: `0.1.0`
 - R2D3-Startkonfiguration;
 - PyTorch Candidate-Q-Referenzmodell;
 - C++20-Bridge-Contract;
+- persistenter M0.4-Worker mit `dxai.process.v1`, Cold-Reset-Manager,
+  Lifecycle-/Idempotenztests und kanonischem Trace-Hash;
 - Protobuf-Entwurf, JSON Schemas, CI und Runbooks.
 
 ## M0.1 lokal geprueft
@@ -47,9 +49,46 @@ Die Probe ist absichtlich noch kein Environment: Candidate-Ausfuehrung,
 `step`, Decision-Boundary-Fortschritt, IPC und echte Transition-/Replay-Gates
 folgen in M0.3/M0.
 
+## M0.4 lokal geprueft
+
+- striktes `dxai.process.v1` JSON-Lines-Framing mit 1 MiB Limit;
+- geschlossene Health-/Reset-/Step-/Error-Verträge ohne Reward oder Terminal;
+- `READY`, `EPISODE_ACTIVE` und `FAULTED` Lifecycle-Gates;
+- 128-entry Request-Cache mit exact duplicate replay, Payload-Reuse- und
+  Eviction-Schutz;
+- Python-Manager mit Health-vor-Reset, Worker-Ersetzung bei Cold Reset,
+  Timeout-/EOF-/Malformed-Response-Isolation und idempotentem Close;
+- kanonischer Trace-Hash, der nur Lifecycle-Metadaten normalisiert;
+- native und Python Contract-/Lifecycle-Tests sowie Release-Build der Probe.
+
+### M0.4 Real-Asset Acceptance Gate (2026-08-12)
+
+- Health/Handshake gegen den gepinnten DevilutionX-Release bestanden;
+  `dxai.process.v1`, Adapter `m0.4`, Observation/Action `v1` und
+  `combat.single_melee.v0` wurden bestätigt;
+- Reset mit Seed `123` auf `EPISODE_ACTIVE`, `step_id=0`, Position `(79,58)`,
+  `engine_tick=0` und acht nativen `MOVE_TO_TILE`-Kandidaten bestanden;
+- 32 erfolgreiche Steps im selben nativen Worker bestanden: `0 -> 32`,
+  monotoner Engine-Tick `0 -> 320`, Position `(79,58) -> (75,58)`;
+- Duplicate-Exactly-Once bestanden: identische Antwort, einmaliger Schritt,
+  einmalige Engine-Tick-/Positionsänderung; geänderte Payload mit derselben
+  Request-ID wurde als `REQUEST_ID_REUSE` abgewiesen;
+- `STALE_STEP`- und `INVALID_CANDIDATE`-Reject-Oracles bestanden, jeweils mit
+  identischem Kontroll-Hash nach dem folgenden gültigen Schritt;
+- stale Episode, neue Same-Seed-Episode-IDs, A -> B -> A Cold-Reset und
+  unabhängige Same-Seed-32-Step-Traces bestanden;
+- nicht-sensitive kanonische Evidenz: 32-Step
+  `4e906aa70e2ad64ec790074d55a15802192aae8b1508708551a65a476825d336`,
+  A1/A2 `92b4939801f88937fecaea40c0d172aca36b98fa0ec27cd8f0deea5b603cc33a`,
+  Reject-Oracle `533715ff5eb3f81c547ac6e3569fae1621526ce1f73ccb0fc5b007c72f2f7589`;
+- stdout enthielt ausschließlich Protocol-Frames, stderr keine sensiblen
+  Pfade, Worker wurden bei Cold Reset und idempotentem Close beendet;
+- externe Originaldaten, Core-Assets, Runtime-DLLs und temporäre Spielausgaben
+  blieben außerhalb des Repositories.
+
 ## Noch nicht implementiert
 
-- vollstaendige DevilutionX-Bridge mit Reset/Step/Candidate-Ausfuehrung und IPC;
+- globale M0-Abnahme inklusive Real-Asset-32-Step-/Replay-/Reset-Gates;
 - automatischer Fixturebau im Upstream;
 - Human-Demo-Recorder;
 - BC-Trainingsloop;
