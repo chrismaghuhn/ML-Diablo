@@ -66,18 +66,7 @@ def canonical_candidate_set_key(
         if semantic_key in semantic_keys:
             raise ValueError("duplicate semantic action candidates")
         semantic_keys.add(semantic_key)
-        fields: list[str] = [
-            f"candidate_id={action.candidate_id}",
-            f"kind={action.kind.value}",
-        ]
-        for field in _PAYLOAD_FIELDS:
-            value = getattr(action, field)
-            if field == "target_tile":
-                encoded = "null" if value is None else f"{value.x},{value.y}"
-            else:
-                encoded = "null" if value is None else str(value)
-            fields.append(f"{field}={encoded}")
-        entries.append(";".join(fields))
+        entries.append(f"candidate_id={action.candidate_id};{canonical_action_key(action)}")
     return f"{_OBSERVATION_CONTRACT_VERSION}|{_ACTION_CONTRACT_VERSION}|" + "||".join(
         entries
     )
@@ -85,3 +74,22 @@ def canonical_candidate_set_key(
 
 def candidate_set_sha256(actions: tuple[ActionCandidate, ...] | list[ActionCandidate]) -> str:
     return hashlib.sha256(canonical_candidate_set_key(actions).encode("utf-8")).hexdigest()
+
+
+def canonical_action_key(action: ActionCandidate) -> str:
+    """Return the versioned semantic identity of an action payload.
+
+    Candidate IDs, labels, and auxiliary features are observation-local or
+    descriptive. They are deliberately excluded from semantic replay identity.
+    """
+
+    action.validate()
+    fields: list[str] = [f"kind={action.kind.value}"]
+    for field in _PAYLOAD_FIELDS:
+        value = getattr(action, field)
+        if field == "target_tile":
+            encoded = "null" if value is None else f"{value.x},{value.y}"
+        else:
+            encoded = "null" if value is None else str(value)
+        fields.append(f"{field}={encoded}")
+    return ";".join(fields)

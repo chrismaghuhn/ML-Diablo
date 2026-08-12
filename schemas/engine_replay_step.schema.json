@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dxai.local/schemas/engine-replay-step.schema.json",
+  "title": "dxai.engine_replay.v1 step",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "step_id",
+    "observation_before_sha256",
+    "candidate_set_before_sha256",
+    "action",
+    "action_canonical_key",
+    "recorded_candidate_id",
+    "observation_after_sha256",
+    "candidate_set_after_sha256",
+    "engine_tick_before",
+    "engine_tick_after"
+  ],
+  "properties": {
+    "step_id": {"type": "integer", "minimum": 0},
+    "observation_before_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_set_before_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "action": {"$ref": "#/$defs/semantic_action"},
+    "action_canonical_key": {"type": "string", "minLength": 1},
+    "recorded_candidate_id": {"type": "integer", "minimum": 0},
+    "observation_after_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_set_after_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "engine_tick_before": {"type": "integer", "minimum": 0},
+    "engine_tick_after": {"type": "integer", "minimum": 0}
+  },
+  "$defs": {
+    "semantic_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "target_entity_id",
+        "target_tile",
+        "inventory_slot",
+        "equipment_slot",
+        "belt_slot",
+        "spell_id",
+        "store_item_id",
+        "stat_id"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "WAIT",
+            "MOVE_TO_TILE",
+            "ATTACK_ENTITY",
+            "CAST_SPELL_AT_ENTITY",
+            "CAST_SPELL_AT_TILE",
+            "USE_BELT_SLOT",
+            "PICK_UP_ITEM",
+            "OPERATE_OBJECT",
+            "EQUIP_ITEM",
+            "UNEQUIP_ITEM",
+            "DROP_ITEM",
+            "BUY_ITEM",
+            "SELL_ITEM",
+            "REPAIR_ITEM",
+            "ALLOCATE_STAT",
+            "TAKE_STAIRS",
+            "RETURN_TO_TOWN"
+          ]
+        },
+        "target_entity_id": {"type": ["integer", "null"], "minimum": 0},
+        "target_tile": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y"],
+              "properties": {
+                "x": {"type": "integer"},
+                "y": {"type": "integer"}
+              }
+            }
+          ]
+        },
+        "inventory_slot": {"type": ["integer", "null"], "minimum": 0},
+        "equipment_slot": {"type": ["integer", "null"], "minimum": 0},
+        "belt_slot": {"type": ["integer", "null"], "minimum": 0},
+        "spell_id": {"type": ["integer", "null"], "minimum": 0},
+        "store_item_id": {"type": ["integer", "null"], "minimum": 0},
+        "stat_id": {"type": ["integer", "null"], "minimum": 0}
+      }
+    }
+  }
+}

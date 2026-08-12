@@ -37,6 +37,7 @@ class ProcessErrorCode(StrEnum):
     PROTOCOL_VERSION_MISMATCH = "PROTOCOL_VERSION_MISMATCH"
     REQUEST_ID_REUSE = "REQUEST_ID_REUSE"
     REQUEST_ID_EXPIRED = "REQUEST_ID_EXPIRED"
+    REPLAY_DIVERGENCE = "REPLAY_DIVERGENCE"
     INVALID_STATE = "INVALID_STATE"
     ENGINE_FAULTED = "ENGINE_FAULTED"
     STALE_EPISODE = "STALE_EPISODE"
@@ -104,17 +105,11 @@ class HealthResponse:
     pid: int
     protocol_version: str = PROCESS_PROTOCOL_VERSION
 
-    def validate_compatibility(self, task_id: str) -> None:
+    def validate_identity(self) -> None:
         if self.protocol_version != PROCESS_PROTOCOL_VERSION:
             raise ProcessProtocolError(
                 ProcessErrorCode.PROCESS_VERSION_MISMATCH,
                 "worker process protocol version is incompatible",
-                request_id=self.request_id,
-            )
-        if self.process_state is not ProcessState.READY:
-            raise ProcessProtocolError(
-                ProcessErrorCode.INVALID_STATE,
-                "worker must be READY before Reset",
                 request_id=self.request_id,
             )
         if self.adapter_revision != ADAPTER_REVISION:
@@ -157,6 +152,15 @@ class HealthResponse:
             raise ProcessProtocolError(
                 ProcessErrorCode.PROCESS_VERSION_MISMATCH,
                 "worker feature contract is incompatible",
+                request_id=self.request_id,
+            )
+
+    def validate_compatibility(self, task_id: str) -> None:
+        self.validate_identity()
+        if self.process_state is not ProcessState.READY:
+            raise ProcessProtocolError(
+                ProcessErrorCode.INVALID_STATE,
+                "worker must be READY before Reset",
                 request_id=self.request_id,
             )
         if task_id not in self.supported_task_versions:

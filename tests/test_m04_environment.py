@@ -74,7 +74,8 @@ class FakeWorker:
             raise self.fail_with
         request_id = int(payload["request_id"])
         if payload["type"] == "health_request":
-            return _health(request_id, self.pid)
+            state = "EPISODE_ACTIVE" if self.seed is not None else "READY"
+            return _health(request_id, self.pid, state)
         if payload["type"] == "reset_request":
             first, _ = _observations()
             episode_id = f"native-episode-{self.pid}"
@@ -168,6 +169,21 @@ def test_reset_replaces_worker_and_step_sends_only_lifecycle_identity_and_id(
     assert len(FakeWorker.instances) == 2
     assert first.episode_id != second.episode_id
     env.close()
+    env.close()
+
+
+def test_reset_exposes_worker_startup_and_health_measurement_hooks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env = _environment(tmp_path, monkeypatch)
+
+    env.reset(seed=123, task_id=TASK_ID)
+
+    assert env.last_worker_startup_ns is not None
+    assert env.last_worker_startup_ns >= 0
+    health = env.health_check()
+    assert health.pid == env.worker_pid
+    assert health.process_state.value == "EPISODE_ACTIVE"
     env.close()
 
 

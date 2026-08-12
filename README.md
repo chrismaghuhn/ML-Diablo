@@ -12,9 +12,22 @@ protocol is strict `dxai.process.v1` JSON-Lines with Health/Reset/Step/Error,
 `READY`/`EPISODE_ACTIVE`/`FAULTED`, unique episode IDs, step and candidate-set
 identity checks, bounded request idempotency, and stdout/stderr isolation.
 Only the existing native `MOVE_TO_TILE` candidate is supported. Rewards,
-terminal flags, warm reset and learner paths remain out of scope. The real
-32-step gate still requires external user-owned engine/data inputs; see the
+terminal flags, warm reset and learner paths remain out of scope. The M0.4
+real-asset gate is recorded as passed in `RELEASE_VALIDATION.md`; M0.5's
+larger real replay/soak gates remain opt-in and require external user-owned
+engine/data inputs. See the
 [`M0.4 runbook`](docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md).
+
+## M0.5 Replay, Soak, Throughput & Process Isolation
+
+M0.5 adds the separate `dxai.engine_replay.v1` environment-reproducibility
+artifact, semantic action playback against the current complete candidate set,
+strict first-divergence reporting, a synchronous one-process-per-slot vector
+manager, and observational soak/throughput diagnostics. It does not add
+training-trajectory fields, rewards, terminal flags, engine events or a warm
+reset. The real gates are documented in the
+[`M0.5 runbook`](docs/runbooks/M05_REPLAY_SOAK_THROUGHPUT.md) and remain
+pending until the external inputs are supplied.
 
 ## Ziel
 

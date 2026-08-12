@@ -147,6 +147,24 @@ process contract and Python cold-reset boundary, not the global M0 acceptance.
 - [x] stale-episode rejection, process cleanup and protocol-only stdout;
 - [ ] global M0 reset/replay/throughput/soak acceptance.
 
+## M0.5 - Replay, Soak, Throughput and Process Isolation
+
+- [x] separate closed `dxai.engine_replay.v1` artifact and central schema
+  registration;
+- [x] full semantic-action recording and current-candidate playback with
+  first-divergence `REPLAY_DIVERGENCE`;
+- [x] atomic manifest-last publication and fail-closed artifact loading;
+- [x] synchronous one-process-per-slot vector composition over M0.4;
+- [x] observational diagnostics and opt-in replay/soak/throughput harnesses;
+- [x] warm reset remains deferred; no reward, terminal/truncation or engine
+  event semantics are invented;
+- [ ] real 100-recording/1,000-playback, 10,000-Step, 1,000-episode and
+  parallel-worker acceptance gates with external inputs.
+
+The repository implementation can therefore be complete while M0.5 real
+acceptance remains pending. See
+[`M0.5 runbook`](runbooks/M05_REPLAY_SOAK_THROUGHPUT.md).
+
 ## M1 — Single Melee
 
 - [ ] Random, Safe und Aggressive Baselines reportet.

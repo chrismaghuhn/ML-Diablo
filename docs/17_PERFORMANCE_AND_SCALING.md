@@ -26,7 +26,12 @@ Früh ist nicht das neuronale Netz, sondern die Engine-Simulation plus Prozess-/
 
 ## Prozessmodell
 
-Eine Engine pro Prozess ist robuster, kostet aber RAM. Start mit 2–8 Instanzen. Multiprocessing-Startmethode und CPU-Affinity werden gemessen. Ein Prozesspool kann nach Episode wiederverwendet werden, sofern Resetsoak sauber ist.
+Eine Engine pro Prozess ist robuster, kostet aber RAM. M0.5 stellt dafür einen
+synchronen Vector-Manager mit einem bestehenden M0.4-Worker pro Slot bereit.
+Gemessen werden Worker-Start, Health, Cold Reset, Step-Batch, Steps/s und
+Ressourcen für 1/2/4 Slots. Warm reset wird nicht als synthetischer
+Prozesspoolvorteil benchmarked, solange kein vollständiger nativer
+Teardown/Reinit-Pfad bewiesen ist.
 
 ## Inference
 
@@ -46,7 +51,10 @@ Kompression darf nicht zu undokumentiertem Quantisierungsverlust führen. Rohwer
 
 ## Replay
 
-Der Scaffold-Sampler ist O(N). Produktionsoptionen:
+Der Engine-Replay-Pfad ist ein Audit-/Reproduzierbarkeitsformat, kein
+Trainingsreplay. Der Resolver scannt die vollständige aktuelle Candidate-Liste
+und sendet die neu aufgelöste ID. Produktionsoptionen für den separaten
+Trainings-Sampler sind:
 
 - Sum/Segment Tree;
 - Reverb-artiger lokaler Service;
@@ -99,5 +107,10 @@ Jeder Performancebericht nennt:
 - Median/p95;
 - Fehlerquote;
 - Observation- und Replayvolumen.
+
+Der M0.5-Report nennt zusätzlich Startup-, Health-, Reset- und Step-Latenzen,
+Median/p95/p99, strukturierte Fehlercodes und verfügbare
+Ressourcen-/Runtime-Verzeichnis-Samples. Fehlende Plattformmetriken bleiben
+`UNAVAILABLE`; es werden keine Schwellenwerte erfunden.
 
 „Steps per second“ ohne Definition der Decision Boundary ist nicht vergleichbar.

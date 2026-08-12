@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dxai.local/schemas/engine-replay-manifest.schema.json",
+  "title": "dxai.engine_replay.v1 manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "seed",
+    "step_count",
+    "devilutionx_revision",
+    "adapter_revision",
+    "build_fingerprint",
+    "process_protocol_version",
+    "observation_version",
+    "action_version",
+    "candidate_canonicalization_version",
+    "asset_set_fingerprint",
+    "initial_observation_sha256",
+    "initial_candidate_set_sha256",
+    "final_observation_sha256",
+    "semantic_trace_sha256",
+    "steps_file",
+    "steps_file_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "dxai.engine_replay.v1"},
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "step_count": {"type": "integer", "minimum": 1},
+    "devilutionx_revision": {"type": "string", "minLength": 1, "maxLength": 128},
+    "adapter_revision": {"type": "string", "minLength": 1, "maxLength": 128},
+    "build_fingerprint": {"type": "string", "minLength": 1, "maxLength": 256},
+    "process_protocol_version": {"const": "dxai.process.v1"},
+    "observation_version": {"const": "dxai.observation.v1"},
+    "action_version": {"const": "dxai.action.v1"},
+    "candidate_canonicalization_version": {
+      "const": "dxai.candidate_set.v1"
+    },
+    "asset_set_fingerprint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^(?!.*\\.\\.)[^/\\\\:]+$"
+    },
+    "initial_observation_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "initial_candidate_set_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "final_observation_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semantic_trace_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "steps_file": {"const": "steps.jsonl"},
+    "steps_file_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

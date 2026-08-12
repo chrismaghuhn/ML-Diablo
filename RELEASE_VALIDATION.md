@@ -153,3 +153,19 @@ candidate sets, actions and engine ticks remained in the hash.
 
 This evidence closes the M0.4 lifecycle gate only. Global M0, M0.5, rewards,
 terminal semantics, replay learning, throughput and ML remain open.
+
+## M0.5 implementation checkpoint
+
+The repository now contains the approved M0.5 implementation: the separate
+`dxai.engine_replay.v1` environment-reproducibility artifact, strict atomic
+publication and loading, semantic current-candidate playback with
+`REPLAY_DIVERGENCE`, a one-process-per-vector-slot manager, and observational
+soak/throughput harnesses. It does not add training-trajectory fields,
+rewards, terminal/truncation flags, engine events or warm reset.
+
+The current session has no user-owned probe, Diablo data, core assets or
+runtime inputs available. Accordingly the real 100-recording/1,000-playback,
+10,000-Step, 1,000-episode and parallel-worker gates are **PENDING** and are
+not counted as PASS. Run
+[`docs/runbooks/M05_REPLAY_SOAK_THROUGHPUT.md`](docs/runbooks/M05_REPLAY_SOAK_THROUGHPUT.md)
+when those inputs are available.

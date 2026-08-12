@@ -1,0 +1,20 @@
+{
+  "schema_version": "dxai.engine_replay.v1",
+  "task_id": "combat.single_melee.v0",
+  "seed": 123,
+  "step_count": 1,
+  "devilutionx_revision": "07385842840437cc9a785b195f5b40b121eaeb1c",
+  "adapter_revision": "m0.4",
+  "build_fingerprint": "dxai-ml-diablo-m0.4",
+  "process_protocol_version": "dxai.process.v1",
+  "observation_version": "dxai.observation.v1",
+  "action_version": "dxai.action.v1",
+  "candidate_canonicalization_version": "dxai.candidate_set.v1",
+  "asset_set_fingerprint": "assets-test-v1",
+  "initial_observation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "initial_candidate_set_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "final_observation_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "semantic_trace_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "steps_file": "steps.jsonl",
+  "steps_file_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

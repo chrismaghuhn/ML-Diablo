@@ -128,10 +128,27 @@ die Lifecycle-Identität. Native stdout ist ausschließlich Protokoll; stderr
 bleibt Diagnosekanal.
 
 Die repository-only Abnahme ist in den C++-/Python-Contract-Tests und im
-Runbook dokumentiert. Die 32-Step-Realabnahme bleibt assetabhängig und ist
-ohne user-owned DevilutionX-DLL, Core-Assets und Diablo-Daten nicht behauptet.
+Runbook dokumentiert. The 32-Step real-asset acceptance is recorded in
+`PROJECT_STATUS.md` and `RELEASE_VALIDATION.md`; it is not a claim that the
+larger M0.5 gates have run.
 Siehe [`docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md`](runbooks/M04_PERSISTENT_ENVIRONMENT.md)
 und [`docs/contracts/PROCESS_PROTOCOL.md`](contracts/PROCESS_PROTOCOL.md).
+
+## M0.5 Environment-Replay and Process-Isolation Slice
+
+M0.5 keeps this `dxai.process.v1` boundary authoritative. Its
+`dxai.engine_replay.v1` artifact stores observation/candidate identities,
+engine ticks and the complete semantic action payload, but no reward,
+termination, truncation, behavior-policy or training-replay fields. Playback
+resolves that payload against the current complete legal candidate set and
+sends only the newly resolved `candidate_id`; a changed candidate set,
+observation, action or tick raises the first `REPLAY_DIVERGENCE` and stops.
+
+The vector manager composes independent existing M0.4 environments, one native
+worker and runtime root per slot. Cold process replacement remains the only
+reset boundary. Warm reset and engine-event/reward derivation remain deferred.
+Execution and the external-input gate are documented in
+[`docs/runbooks/M05_REPLAY_SOAK_THROUGHPUT.md`](runbooks/M05_REPLAY_SOAK_THROUGHPUT.md).
 
 ## Empfohlener Integrationspfad
 

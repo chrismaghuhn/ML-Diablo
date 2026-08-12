@@ -97,6 +97,21 @@ Ein bitweises Trainingsergebnis über Hardware ist nicht immer realistisch. Dahe
 
 Abweichungen werden nicht verschwiegen, sondern im Runmanifest markiert.
 
+## Environment Replay versus Training Replay
+
+`dxai.engine_replay.v1` is an environment-reproducibility artifact. Each
+step stores the full closed semantic action payload and the hashes for the
+before/after observations and complete candidate sets. Playback resolves the
+semantic action against the current candidate set and sends the current
+`candidate_id`; the recorded ID is diagnostic only. A missing action or any
+candidate-set, observation, action or engine-tick change is the first
+`REPLAY_DIVERGENCE`, and playback stops by default.
+
+This artifact is separate from `dxai.transition.v1` and the training replay
+buffer. It contains no reward, terminal, truncation, behavior-policy, TD or
+priority semantics. Lifecycle metadata such as process IDs, runtime roots and
+timestamps is excluded from deterministic hashes.
+
 ## Upstream-Upgrades
 
 Ein Upgrade erzeugt:
