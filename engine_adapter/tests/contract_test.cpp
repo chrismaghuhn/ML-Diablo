@@ -44,6 +44,11 @@ public:
         return dxai_bridge::StepResult { .observation = current_, .reward = -0.001 };
     }
 
+    [[nodiscard]] dxai_bridge::Observation Snapshot() const
+    {
+        return current_;
+    }
+
 private:
     dxai_bridge::Observation current_;
 };
@@ -104,6 +109,26 @@ int main()
             .candidateId = 0,
         });
     Require(!stale.empty(), "stale requests must be rejected");
+
+    const auto beforeRejected = environment.Snapshot();
+    bool rejected = false;
+    try {
+        (void)environment.Step(dxai_bridge::StepRequest {
+            .requestId = 4,
+            .episodeId = beforeRejected.episodeId,
+            .expectedStepId = beforeRejected.stepId,
+            .candidateId = 99,
+        });
+    } catch (const std::invalid_argument &) {
+        rejected = true;
+    }
+    Require(rejected, "out-of-range candidate IDs must be rejected");
+    const auto afterRejected = environment.Snapshot();
+    Require(
+        afterRejected.stepId == beforeRejected.stepId
+            && afterRejected.engineTick == beforeRejected.engineTick
+            && afterRejected.player.position == beforeRejected.player.position,
+        "rejected candidate IDs must not mutate engine state");
 
     dxai_bridge::ActionCandidate missingTarget {
         .candidateId = 0,

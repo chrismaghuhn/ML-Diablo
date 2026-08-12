@@ -1,0 +1,114 @@
+{
+  "schema_version": "dxai.probe.step.v1",
+  "episode_id": "devilutionx-m03-123",
+  "task_id": "combat.single_melee.v0",
+  "seed": 123,
+  "step_id": 0,
+  "candidate_set_sha256": "799c12aaacd1cdc034ec99df19aa514ec42706334c52a9475841cb4f0e04a155",
+  "next_candidate_set_sha256": "acaadf7ba4ecc31c044944ed7b2a527ce3a569891085b6c05a7a6480810d957b",
+  "observation": {
+    "schema_version": "dxai.observation.v1",
+    "episode_id": "devilutionx-m03-123",
+    "task_id": "combat.single_melee.v0",
+    "seed": 123,
+    "step_id": 0,
+    "engine_tick": 0,
+    "decision_reason": "PLAYER_READY",
+    "player": {
+      "position": {"x": 79, "y": 58},
+      "hp": 70,
+      "hp_max": 70,
+      "mana": 10,
+      "mana_max": 10,
+      "level": 1,
+      "experience": 0,
+      "gold": 100,
+      "potions": 2,
+      "class_id": "WARRIOR",
+      "dungeon_level": 1,
+      "attributes": {},
+      "inventory": []
+    },
+    "local_tiles": [
+      {"relative": {"x": 1, "y": 1}, "terrain_id": 1, "walkable": true, "visible": true, "explored": true, "occupied": false, "hazard": 0.0}
+    ],
+    "entities": [],
+    "legal_actions": [
+      {
+        "candidate_id": 0,
+        "kind": "MOVE_TO_TILE",
+        "target_entity_id": null,
+        "target_tile": {"x": 80, "y": 59},
+        "inventory_slot": null,
+        "equipment_slot": null,
+        "belt_slot": null,
+        "spell_id": null,
+        "store_item_id": null,
+        "stat_id": null,
+        "label": "MOVE_TO_TILE:80:59",
+        "features": []
+      }
+    ],
+    "recent_events": []
+  },
+  "action": {
+    "candidate_id": 0,
+    "kind": "MOVE_TO_TILE",
+    "target_entity_id": null,
+    "target_tile": {"x": 80, "y": 59},
+    "inventory_slot": null,
+    "equipment_slot": null,
+    "belt_slot": null,
+    "spell_id": null,
+    "store_item_id": null,
+    "stat_id": null,
+    "label": "MOVE_TO_TILE:80:59",
+    "features": []
+  },
+  "next_observation": {
+    "schema_version": "dxai.observation.v1",
+    "episode_id": "devilutionx-m03-123",
+    "task_id": "combat.single_melee.v0",
+    "seed": 123,
+    "step_id": 1,
+    "engine_tick": 32,
+    "decision_reason": "PLAYER_READY",
+    "player": {
+      "position": {"x": 80, "y": 58},
+      "hp": 70,
+      "hp_max": 70,
+      "mana": 10,
+      "mana_max": 10,
+      "level": 1,
+      "experience": 0,
+      "gold": 100,
+      "potions": 2,
+      "class_id": "WARRIOR",
+      "dungeon_level": 1,
+      "attributes": {},
+      "inventory": []
+    },
+    "local_tiles": [
+      {"relative": {"x": 1, "y": 1}, "terrain_id": 1, "walkable": true, "visible": true, "explored": true, "occupied": false, "hazard": 0.0}
+    ],
+    "entities": [],
+    "legal_actions": [
+      {
+        "candidate_id": 0,
+        "kind": "MOVE_TO_TILE",
+        "target_entity_id": null,
+        "target_tile": {"x": 81, "y": 59},
+        "inventory_slot": null,
+        "equipment_slot": null,
+        "belt_slot": null,
+        "spell_id": null,
+        "store_item_id": null,
+        "stat_id": null,
+        "label": "MOVE_TO_TILE:81:59",
+        "features": []
+      }
+    ],
+    "recent_events": []
+  },
+  "requested_target_reached": false
+}

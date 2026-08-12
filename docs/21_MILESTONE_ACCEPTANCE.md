@@ -85,6 +85,41 @@ Evidence from the local run on 2026-08-12: seed `123`, player `(79, 58)`,
 entries. The identical-output SHA-256 was
 `eadf3b0cb4beb8f7c8ca05c0746663de084430d95799908a24ab4b05cd531cb2`.
 
+## M0.3 - First Semantic Step Slice
+
+This is an evidence checkpoint inside M0. It does not mark the global M0
+contract foundation complete.
+
+- [x] real `dxai.observation.v1` state produces native `MOVE_TO_TILE`
+  candidates for the controlled fixture;
+- [x] candidate generation uses native `CanStep`/`PosOkPlayer` legality and a
+  conservative visible-tile projection;
+- [x] semantic duplicates are removed, ordering is deterministic, and IDs are
+  dense `0..N-1`;
+- [x] external execution accepts only `candidate_id` and closed payloads;
+- [x] episode/step/version-bound candidate identity is regenerated and
+  compared before `MakePlrPath`;
+- [x] invalid and stale identity paths are structured failures before native
+  action mutation;
+- [x] one native movement action reaches the first subsequent controllable
+  boundary under the 256-tick safety bound;
+- [x] the generic boundary does not require requested-target reach, while the
+  controlled adjacent fixture asserts target reach;
+- [x] next observation and fresh legal candidate set are emitted as
+  `dxai.probe.step.v1`;
+- [x] the restricted adjacent candidate set has an explicit observability leak
+  audit for occupancy, visibility, hidden entities, corners and future path
+  state;
+- [x] two clean seeded runtime roots produce equal canonical and raw contract
+  hashes;
+- [x] zero supported movement candidates return structured
+  `NO_SUPPORTED_CANDIDATES`; no `WAIT` is fabricated;
+- [x] M0.2 byte-compatible observation output remains unchanged;
+- [ ] persistent reset/step IPC, full process protocol, replay and multi-step
+  lifecycle;
+- [ ] broader action families, terminal handling, combat, town, loot and
+  exploration.
+
 ## M1 — Single Melee
 
 - [ ] Random, Safe und Aggressive Baselines reportet.

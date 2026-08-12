@@ -29,6 +29,29 @@ Für einen kontrollierten Fixture-Slice erzeugt dieselbe Identität dieselbe kan
 
 Zeitstempel, Prozess-IDs, Logpfade und Request-IDs werden vor dem Vergleich entfernt.
 
+## M0.3 Candidate-Set-Identität
+
+Der erste reale Step verwendet eine kanonische, geordnete Darstellung:
+
+```text
+dxai.observation.v1|dxai.action.v1|
+candidate_id;kind;target_entity_id;target_tile;inventory_slot;
+equipment_slot;belt_slot;spell_id;store_item_id;stat_id
+```
+
+Die Liste ist semantisch dedupliziert, nach absolutem `(x,y)` für
+`MOVE_TO_TILE` sortiert und anschließend dicht nummeriert. Label und
+Auxiliary-Features verändern diese Identität nicht. Der SHA-256-Digest wird
+im `dxai.probe.step.v1`-Envelope für die ausgegebene und die nächste
+Candidate-Liste mitgeführt; die Regeneration vor der nativen Mutation muss
+kanonisch und digestgleich sein.
+
+Der M0.3-Nachweis vergleicht außerdem kanonische JSON-Hashes der initialen
+Observation, der gewählten semantischen Aktion und der nächsten Observation
+sowie rohe Probeausgaben. Die zwei frischen Seed-123-Runtime-Wurzeln müssen
+alle diese Werte gleich liefern. M0.3 ersetzt nicht die spätere vollständige
+Reset-, Replay- und Multi-Seed-Abnahme.
+
 ## RNG
 
 Jede relevante RNG-Quelle muss entweder:

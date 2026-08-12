@@ -41,6 +41,25 @@ Bei großen Mengen wird nicht willkürlich abgeschnitten. Zulässige Verfahren:
 2. hierarchische Entscheidung in getrennte atomare Grenzen;
 3. dokumentiertes Top-k nur als experimentelle Variante mit Oracle-Coverage-Messung.
 
+## M0.3 Candidate-Lifetime und Step-Grenze
+
+Im ersten realen DevilutionX-Slice ist `MOVE_TO_TILE` die einzige exponierte
+ActionKind. Die acht lokalen Nachbarn werden engine-seitig mit `CanStep`,
+`PosOkPlayer` und der sichtbarkeitsgebundenen Adapterprojektion geprüft. Die
+Probe akzeptiert von außen nur `candidate_id`; Koordinaten, Mausereignisse,
+Monsterindizes und rohe Enginecommands sind keine API.
+
+Die IDs sind nur für die ausgebende Entscheidung gültig. Vor `MakePlrPath`
+regeneriert der Native-Adapter die vollständige geordnete Candidate-Liste und
+vergleicht `candidate_id`, `kind`, Payload und Contractversionen kanonisch. Ein
+anderer `episode_id + step_id`-Kontext, ein anderer Candidate-Hash oder ein
+ungültiger Index wird vor der Mutation als stale/state-mismatch abgelehnt.
+
+Der Step endet an der ersten folgenden kontrollierbaren Boundary, nicht
+zwangsläufig am angeforderten Ziel. Für die kontrollierte Nachbar-Fixture wird
+Zielerreichung separat behauptet und getestet; sie ist kein allgemeiner
+Legalitätsvertrag.
+
 ## Strikte Payload-Matrix
 
 Jede ActionKind besitzt einen geschlossenen Payload-Vertrag. `WAIT` und

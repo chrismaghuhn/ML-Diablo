@@ -43,6 +43,7 @@
 - [Codex-Handoff](CODEX_HANDOFF.md)
 - [Runbooks](runbooks/README.md)
 - [M0.2 First Real Observation](runbooks/M02_OBSERVATION.md)
+- [M0.3 First Semantic Step](runbooks/M03_FIRST_STEP.md)
 
 ## Architekturentscheidungen
 

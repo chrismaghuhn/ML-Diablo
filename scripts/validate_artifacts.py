@@ -57,6 +57,7 @@ def validate_examples(store: dict[str, dict[str, Any]]) -> int:
         "action.example.json": "action.schema.json",
         "observation.example.json": "observation.schema.json",
         "transition.example.json": "transition.schema.json",
+        "probe_step.example.json": "probe_step.schema.json",
         "episode_manifest.example.json": "episode_manifest.schema.json",
         "checkpoint.example.json": "checkpoint.schema.json",
     }

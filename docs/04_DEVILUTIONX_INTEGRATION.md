@@ -64,6 +64,43 @@ Die M0.2-Build- und Verifikationsschritte stehen in
 Engine-Ausgabe wird erst nach JSON-Schema- und Determinismuspruefung als
 Observation an Python uebergeben.
 
+## M0.3 implementierter Slice: First Semantic Step
+
+M0.3 erweitert dieselbe externe Probe um einen einshotigen Aktionspfad fuer
+`combat.single_melee.v0`. Es gibt ausschliesslich `MOVE_TO_TILE` fuer die acht
+unmittelbar benachbarten, sichtbaren Tiles. Die Engine prueft `CanStep` und
+`PosOkPlayer`; Python erzeugt keine eigene Walkability-, Occupancy- oder
+Combatregel.
+
+Die Candidate-Liste wird nach absolutem `(x,y)`-Schluessel sortiert,
+semantisch dedupliziert und danach dicht mit `candidate_id = 0..N-1`
+nummeriert. Die Candidate-Identitaet umfasst die geordnete Liste aus
+`candidate_id`, `kind`, geschlossener Payload und den Versionen
+`dxai.observation.v1|dxai.action.v1`; Label und Features sind nur
+Beschreibungen. Vor `MakePlrPath` wird genau diese kanonische Liste erneut
+gebildet und byte-/hashgleich gegen die ausgegebene Liste geprueft.
+
+Die generische Boundary ist nicht "Ziel erreicht": Der Step endet an der
+ersten folgenden Grenze mit aktivem Spieler, korrektem geladenem Level,
+`PauseMode == 0`, `PM_STAND`, leerem Walkpath, keiner Destination-Action und
+ohne ausstehende Future-Position. Die kontrollierte Fixture prueft zusaetzlich,
+dass ein ausgewaehltes Nachbarziel erreicht wird. Eine Unterbrechung einer
+legalen Aktion waere spaeter eine erfolgreiche, veraenderte Transition; nur
+eine ausbleibende Boundary innerhalb der 256-Tick-Grenze oder ein echter
+Bridge-/Contractfehler ist `ACTION_RESOLUTION_FAILED`.
+
+Der gepinnte Build exportiert zwar `game_loop(false)`, dessen
+`multi_handle_delta()` aber `NetInit`-Zustand benoetigt. Da M0.3 bewusst keine
+Netzwerk-/Save-/IPC-Erweiterung einfuehrt, zentralisiert der Adapter die
+exportierten Calls des gepinnten `GameLogic()`-Koerpers in einer einzigen
+Funktion und dokumentiert diese Abweichung. Es gibt keine zweite Spielregel-
+Implementierung.
+
+Der vollstaendige Nachweis steht in
+[`docs/runbooks/M03_FIRST_STEP.md`](runbooks/M03_FIRST_STEP.md). M0.3 ist ein
+Evidenzcheckpoint und erklaert weder globale M0-Abnahme noch ein vollstaendiges
+Environment.
+
 ## Empfohlener Integrationspfad
 
 ### Schritt 1 — Upstream sauber pinnen

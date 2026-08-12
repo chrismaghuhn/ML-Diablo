@@ -29,6 +29,16 @@ Die Reihenfolge ist absichtlich environment-first. Ein Item gilt nur als abgesch
 9. kanonischen Trajektorienhash vergleichen.
 10. Leak-Tests und invalid-action Tests.
 
+### M0.3 Evidence checkpoint
+
+The first real action loop is implemented for the controlled
+`combat.single_melee.v0` fixture: adjacent visible `MOVE_TO_TILE` candidate
+generation, deterministic semantic IDs, candidate-set identity checks before
+`MakePlrPath`, bounded native advancement to the next controllable boundary,
+and the `dxai.probe.step.v1` evidence envelope. Persistent IPC, reset
+isolation, replay, multi-step service lifetime, broader action families and
+the global M0 gates remain open.
+
 ## M0.5 — Durchsatz und Replay
 
 1. 1000 Episoden ohne Ressourcenleck.

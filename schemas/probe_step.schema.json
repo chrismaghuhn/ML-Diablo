@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/dxai/probe_step.schema.json",
+  "title": "DXAI first probe step v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "episode_id", "task_id", "seed", "step_id",
+    "candidate_set_sha256", "next_candidate_set_sha256", "observation",
+    "action", "next_observation", "requested_target_reached"
+  ],
+  "properties": {
+    "schema_version": {"const": "dxai.probe.step.v1"},
+    "episode_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "step_id": {"type": "integer", "minimum": 0},
+    "candidate_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "next_candidate_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "observation": {"$ref": "observation.schema.json"},
+    "action": {"$ref": "action.schema.json"},
+    "next_observation": {"$ref": "observation.schema.json"},
+    "requested_target_reached": {"type": "boolean"}
+  }
+}

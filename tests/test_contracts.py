@@ -15,7 +15,11 @@ from dxai.contracts.observations import (
 )
 from dxai.contracts.results import StepResult
 from dxai.contracts.serialization import canonical_json
-from dxai.env.legal import assign_candidate_ids
+from dxai.env.legal import (
+    assign_candidate_ids,
+    candidate_set_sha256,
+    canonical_candidate_set_key,
+)
 from dxai.env.mock import DeterministicCombatEnv
 
 
@@ -61,6 +65,43 @@ def test_duplicate_semantic_candidates_are_rejected() -> None:
         assign_candidate_ids(
             [ActionCandidate(-1, ActionKind.WAIT), ActionCandidate(-1, ActionKind.WAIT)]
         )
+
+
+def test_candidate_set_identity_is_ordered_and_excludes_descriptive_fields() -> None:
+    candidates = assign_candidate_ids(
+        [
+            ActionCandidate(
+                -1,
+                ActionKind.MOVE_TO_TILE,
+                target_tile=Vec2(3, 2),
+                label="different label",
+                features=(1.0,),
+            ),
+            ActionCandidate(-1, ActionKind.MOVE_TO_TILE, target_tile=Vec2(2, 3)),
+        ]
+    )
+    expected = (
+        "dxai.observation.v1|dxai.action.v1|"
+        "candidate_id=0;kind=MOVE_TO_TILE;target_entity_id=null;target_tile=2,3;"
+        "inventory_slot=null;equipment_slot=null;belt_slot=null;spell_id=null;"
+        "store_item_id=null;stat_id=null||"
+        "candidate_id=1;kind=MOVE_TO_TILE;target_entity_id=null;target_tile=3,2;"
+        "inventory_slot=null;equipment_slot=null;belt_slot=null;spell_id=null;"
+        "store_item_id=null;stat_id=null"
+    )
+    assert canonical_candidate_set_key(candidates) == expected
+    assert candidate_set_sha256(candidates) == candidate_set_sha256(
+        [
+            ActionCandidate(
+                0,
+                ActionKind.MOVE_TO_TILE,
+                target_tile=Vec2(2, 3),
+                label="ignored",
+                features=(9.0,),
+            ),
+            ActionCandidate(1, ActionKind.MOVE_TO_TILE, target_tile=Vec2(3, 2)),
+        ]
+    )
 
 
 def test_observation_round_trip() -> None:

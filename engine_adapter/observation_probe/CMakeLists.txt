@@ -47,7 +47,7 @@ if(MSVC)
     NO_DEFAULT_PATH
     REQUIRED
   )
-  target_link_libraries(dxai_observation_probe PRIVATE "${DEVILUTIONX_SDL2_LIBRARY}")
+  target_link_libraries(dxai_observation_probe PRIVATE "${DEVILUTIONX_SDL2_LIBRARY}" bcrypt)
 endif()
 
 if(MSVC)

@@ -1,5 +1,19 @@
 # Changelog
 
+## M0.3 - 2026-08-12
+
+- Added the first real semantic DevilutionX step for the controlled fixture.
+- Added native, observability-audited adjacent `MOVE_TO_TILE` candidates with
+  deterministic semantic ordering, deduplication and dense IDs.
+- Added candidate-set canonical identity and SHA-256 binding before native
+  `MakePlrPath` execution.
+- Added bounded advancement to the next controllable boundary and the minimal
+  `dxai.probe.step.v1` envelope with fresh next candidates.
+- Added structured stale, state-mismatch, no-supported-candidates and action-
+  resolution failures plus Python/native contract coverage.
+- Kept persistent IPC, reset service, broader action families, rewards and ML
+  out of scope.
+
 ## M0.2 - 2026-08-12
 
 - Added a separate, pinned-commit DevilutionX read-only observation probe.

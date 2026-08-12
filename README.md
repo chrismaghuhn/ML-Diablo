@@ -100,6 +100,23 @@ Windows-Beispiel:
 Die naechste Grenze ist M0.3: Engine-generierte legale Candidates, Auswahl
 allein per `candidate_id` und genau ein semantischer Engine-Schritt.
 
+## Erster semantischer Schritt (M0.3)
+
+M0.3 schliesst genau einen echten Engine-Loop fuer die kontrollierte
+`combat.single_melee.v0`-Fixture: acht lokale, sichtbare
+`MOVE_TO_TILE`-Candidates werden native erzeugt, semantisch sortiert,
+dedupliziert und dicht nummeriert. Python waehlt nur die ausgegebene
+`candidate_id`; der native Adapter ruft `MakePlrPath` auf und tickt bis zur
+naechsten kontrollierbaren Boundary. Danach liefert `dxai.probe.step.v1` die
+naechste Observation und eine frische Candidate-Liste.
+
+Die generische Boundary verlangt nicht, dass das angeforderte Ziel erreicht
+wird. Die kontrollierte Fixture prueft das fuer den dokumentierten Nachbarschritt
+separat. Es gibt weiterhin kein `WAIT`-Fallback, keine weiteren Actions, kein
+persistent IPC und kein ML. Siehe
+[`docs/runbooks/M03_FIRST_STEP.md`](docs/runbooks/M03_FIRST_STEP.md) fuer
+Candidate-Identity, Leak-Audit, Safety-Bound und Hashnachweis.
+
 ## Separater C++-Contract-Test
 
 ```bash
