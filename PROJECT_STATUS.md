@@ -16,6 +16,8 @@ Version: `0.1.0`
 - R2D3-Startkonfiguration;
 - PyTorch Candidate-Q-Referenzmodell;
 - C++20-Bridge-Contract;
+- persistenter M0.4-Worker mit `dxai.process.v1`, Cold-Reset-Manager,
+  Lifecycle-/Idempotenztests und kanonischem Trace-Hash;
 - Protobuf-Entwurf, JSON Schemas, CI und Runbooks.
 
 ## M0.1 lokal geprueft
@@ -47,9 +49,26 @@ Die Probe ist absichtlich noch kein Environment: Candidate-Ausfuehrung,
 `step`, Decision-Boundary-Fortschritt, IPC und echte Transition-/Replay-Gates
 folgen in M0.3/M0.
 
+## M0.4 lokal geprueft
+
+- striktes `dxai.process.v1` JSON-Lines-Framing mit 1 MiB Limit;
+- geschlossene Health-/Reset-/Step-/Error-Verträge ohne Reward oder Terminal;
+- `READY`, `EPISODE_ACTIVE` und `FAULTED` Lifecycle-Gates;
+- 128-entry Request-Cache mit exact duplicate replay, Payload-Reuse- und
+  Eviction-Schutz;
+- Python-Manager mit Health-vor-Reset, Worker-Ersetzung bei Cold Reset,
+  Timeout-/EOF-/Malformed-Response-Isolation und idempotentem Close;
+- kanonischer Trace-Hash, der nur Lifecycle-Metadaten normalisiert;
+- native und Python Contract-/Lifecycle-Tests sowie Release-Build der Probe.
+
+Die user-owned Runtime-/Asset-/Datenpfade waren in der lokalen Umgebung nicht
+als `DXAI_M04_*` konfiguriert. Daher sind 32 echte Steps in einem PID,
+native Duplicate-Replay und A -> B -> A im echten DevilutionX-Prozess noch
+nicht bestätigt.
+
 ## Noch nicht implementiert
 
-- vollstaendige DevilutionX-Bridge mit Reset/Step/Candidate-Ausfuehrung und IPC;
+- globale M0-Abnahme inklusive Real-Asset-32-Step-/Replay-/Reset-Gates;
 - automatischer Fixturebau im Upstream;
 - Human-Demo-Recorder;
 - BC-Trainingsloop;

@@ -29,6 +29,22 @@ Für einen kontrollierten Fixture-Slice erzeugt dieselbe Identität dieselbe kan
 
 Zeitstempel, Prozess-IDs, Logpfade und Request-IDs werden vor dem Vergleich entfernt.
 
+## M0.4 Prozesslebensdauer
+
+M0.4 vergleicht kanonische JSON-Traces mit
+`src/dxai/env/determinism.py`. Dabei werden ausschließlich
+`request_id`, `pid`/`process_id`, `runtime_root`, Zeitstempel und
+Prozessstart-Metadaten entfernt. Jede `episode_id` wird durch
+`<lifecycle-episode>` ersetzt, weil die Episode-ID pro frischem Worker bewusst
+einzigartig sein muss. Seed, Spieler-/Weltzustand, geordnete Candidates,
+semantische Aktion, `engine_tick` und Step-Reihenfolge bleiben unverändert und
+sind Teil des Hashes.
+
+Die gleiche Seed- und Aktionsfolge darf deshalb über Cold Resets denselben
+semantischen Trace-Hash erzeugen, ohne eine globale Episode-ID oder einen
+Prozess-Hash künstlich wiederzuverwenden. Der opt-in M0.4-Realtest prüft dies
+über mindestens 32 Steps in einem Worker und über einen A -> B -> A Reset.
+
 ## M0.3 Candidate-Set-Identität
 
 Der erste reale Step verwendet eine kanonische, geordnete Darstellung:

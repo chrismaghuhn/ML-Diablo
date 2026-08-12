@@ -1,5 +1,18 @@
 # Changelog
 
+## M0.4 - 2026-08-12
+
+- Added a persistent `--env-stdio` native worker around the M0.3 semantic
+  DevilutionX slice.
+- Added strict `dxai.process.v1` UTF-8 JSON-Lines with a 1 MiB limit,
+  Health/Reset/Step/Error responses and explicit lifecycle states.
+- Added process-unique episode IDs, step/candidate-set identity validation,
+  bounded 128-entry request idempotency and Python cold-reset replacement.
+- Added stdout protocol isolation, stderr diagnostics, canonical lifecycle
+  trace hashing, native/Python contract tests and an opt-in 32-step real gate.
+- Kept rewards, terminal flags, warm reset, broader actions, replay and ML out
+  of scope; the real asset-dependent gate remains open without external inputs.
+
 ## M0.3 - 2026-08-12
 
 - Added the first real semantic DevilutionX step for the controlled fixture.

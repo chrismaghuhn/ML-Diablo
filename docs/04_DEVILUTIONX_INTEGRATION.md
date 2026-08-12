@@ -101,6 +101,38 @@ Der vollstaendige Nachweis steht in
 Evidenzcheckpoint und erklaert weder globale M0-Abnahme noch ein vollstaendiges
 Environment.
 
+## M0.4 implementierter Slice: Persistent Environment Lifecycle
+
+M0.4 ergänzt die bestehende Probe um `--env-stdio`. Der Worker initialisiert
+die gepinnte M0.3-Engine erst nach dem ersten Reset und hält danach dieselben
+Native-Globals, den geladenen Levelzustand, RNG-Fortschritt und kumulativen
+`engine_tick` über beliebig viele Steps am Leben. Ein Worker akzeptiert nur
+ein erfolgreiches Reset; Python ersetzt ihn für jeden Cold Reset durch einen
+frischen Prozess mit eigener Runtime-Wurzel.
+
+Die Prozessgrenze ist `dxai.process.v1`: eine UTF-8-JSON-Line pro Request und
+Response, maximal 1 MiB, geschlossene Health/Reset/Step/Error-Felder und keine
+Reward-/Terminal-/Learner-Felder. `READY`, `EPISODE_ACTIVE` und `FAULTED`
+sind die vollständigen M0.4-Lifecycle-Zustände. Die Episode-ID ist pro Worker
+eindeutig; `step_id`, `episode_id`, Request-ID, Candidate-ID und
+Candidate-Set-SHA-256 werden vor jeder nativen Mutation geprüft. Der Worker
+cached die letzten 128 abgeschlossenen Request-IDs für bytegleiche Duplicate-
+Antworten und lehnt ID-Reuse nach Eviction ab.
+
+Die native Implementierung ruft die M0.3-Funktionen direkt wieder auf:
+`InitializeEngine`, `GenerateMoveCandidates`, `CanonicalCandidateSetKey`,
+`MakePlrPath`, `AdvancePinnedGameLogicBody` und
+`SerializeObservation`. Es gibt weiterhin ausschließlich
+`MOVE_TO_TILE`; Python sendet nur die observation-lokale `candidate_id` und
+die Lifecycle-Identität. Native stdout ist ausschließlich Protokoll; stderr
+bleibt Diagnosekanal.
+
+Die repository-only Abnahme ist in den C++-/Python-Contract-Tests und im
+Runbook dokumentiert. Die 32-Step-Realabnahme bleibt assetabhängig und ist
+ohne user-owned DevilutionX-DLL, Core-Assets und Diablo-Daten nicht behauptet.
+Siehe [`docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md`](runbooks/M04_PERSISTENT_ENVIRONMENT.md)
+und [`docs/contracts/PROCESS_PROTOCOL.md`](contracts/PROCESS_PROTOCOL.md).
+
 ## Empfohlener Integrationspfad
 
 ### Schritt 1 — Upstream sauber pinnen

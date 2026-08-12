@@ -82,6 +82,23 @@ Skalierung erfolgt durch Prozesse, nicht Threads innerhalb einer Engine. Der Pyt
 - Evaluation und Statistik;
 - Checkpoints und Experimentprovenienz.
 
+## M0.4 persistenter Prozess
+
+M0.4 konkretisiert die Prozessgrenze als eine lokale `--env-stdio`-Instanz
+mit `dxai.process.v1`. Der native Worker besitzt genau eine Engine-Episode:
+`READY` vor Reset, `EPISODE_ACTIVE` nach dem erfolgreichen Reset und
+`FAULTED` nach einem fatalen Protocol-/Enginefehler. Python schließt den
+Worker bei jedem Reset und startet eine neue Prozess-/Runtime-Instanz; dadurch
+werden die persistenten DevilutionX-Globals über Steps genutzt, ohne einen
+unbewiesenen Warm-Reset zu behaupten.
+
+Die Wire-Grenze ist eine strikt geschlossene UTF-8-JSON-Line bis 1 MiB.
+Health, Reset, Step und Error tragen versionierte Lifecycle-/Auditdaten.
+`request_id` wird mit einem 128-Einträge-Cache idempotent behandelt, und
+`episode_id`, erwartete `step_id` sowie Candidate-Set-Digest werden vor
+nativer Mutation geprüft. stdout bleibt Protokollkanal; Diagnostik geht nach
+stderr. M0.4 liefert noch keine Rewards, Terminalflags oder Learnerpfade.
+
 ## Kontrollfluss eines Steps
 
 1. Die Engine befindet sich an einer dokumentierten Entscheidungsgrenze.
@@ -96,6 +113,12 @@ Skalierung erfolgt durch Prozesse, nicht Threads innerhalb einer Engine. Der Pyt
 10. Observation, Reward, Flags und Info werden atomar zurückgegeben.
 
 Ein Step ist damit eher ein **Semi-Markov-Entscheidungsschritt** als exakt ein Renderframe. Die Anzahl interner Game-Ticks wird in `engine_tick` sichtbar gemacht.
+
+M0.4 ist an dieser Stelle absichtlich schmaler als der langfristige
+Architekturentwurf: Die `dxai.process.v1` Step-Response enthält Observation,
+Candidate-Set-Identität, angewandte semantische Aktion und Lifecycle-Metadaten,
+aber weder Reward noch `terminated`/`truncated`. Diese Felder gehören erst zu
+einem späteren, ausdrücklich versionierten Transition-Vertrag.
 
 ## Datenfluss
 
@@ -132,10 +155,11 @@ Ein Gewichtsblob ohne Manifest ist kein gültiger Checkpoint.
 | `src/dxai/data` | JSONL-Trajektorien + Manifest | ausführbar |
 | `src/dxai/training/replay.py` | Referenz-PER + Dual Replay | ausführbar, nicht hochskaliert |
 | `src/dxai/models/candidate_q.py` | rekurrentes Candidate-Q-Netz | ausführbar mit PyTorch |
-| `engine_adapter/` | C++-Vertrag und Validierung | kompilierbar |
-| `protocol/` | logisches IPC-Schema | spezifiziert |
+| `engine_adapter/` | C++-Vertrag, Prozessframing und Probe | kompilierbar |
+| `src/dxai/protocol/` | `dxai.process.v1` JSON-Lines und Lifecycle | ausführbar/testbar |
+| `protocol/` | bestehender Protobuf-Entwurf | unverändert, nicht M0.4-authoritativ |
 | `schemas/` | Artefaktverträge | validierbar |
-| echte DevilutionX-Bridge | Engine-Integration | noch zu implementieren |
+| echte DevilutionX-Bridge | M0.4 Probe-Worker | gebaut; Real-Asset-Gate offen |
 | voller Learner | verteiltes Training | noch zu implementieren |
 
 ## Abhängigkeitsrichtung

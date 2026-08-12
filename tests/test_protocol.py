@@ -4,7 +4,19 @@ import struct
 
 import pytest
 
-from dxai.protocol.framing import FrameDecoder, encode_frame
+from dxai.protocol.framing import (
+    FrameDecoder,
+    encode_frame,
+    encode_process_line,
+    parse_process_line,
+)
+from dxai.protocol.lifecycle import (
+    PROCESS_PROTOCOL_VERSION,
+    ProcessErrorCode,
+    ProcessProtocolError,
+    parse_process_request,
+    parse_process_response,
+)
 from dxai.protocol.messages import (
     ACTION_VERSION,
     OBSERVATION_VERSION,
@@ -54,3 +66,56 @@ def test_framing_rejects_non_standard_nan_constant() -> None:
     decoder = FrameDecoder()
     with pytest.raises(ValueError, match="non-JSON"):
         decoder.feed(struct.pack(">I", len(body)) + body)
+
+
+def test_process_line_is_utf8_json_and_bounded_to_one_megabyte() -> None:
+    payload = {
+        "type": "health_request",
+        "protocol_version": PROCESS_PROTOCOL_VERSION,
+        "request_id": 7,
+    }
+    encoded = encode_process_line(payload)
+    assert encoded.endswith(b"\n")
+    assert parse_process_line(encoded[:-1]) == payload
+
+    with pytest.raises(ValueError, match="1 MiB"):
+        encode_process_line({"value": "x" * (1024 * 1024)})
+
+    with pytest.raises(ValueError, match="UTF-8"):
+        parse_process_line(b'{"type":"health_request","value":"\xff"}')
+
+    with pytest.raises(ValueError, match="one JSON object"):
+        parse_process_line(b'{"type":"health_request","request_id":1,"request_id":2}')
+
+
+def test_process_request_rejects_unknown_fields_and_wrong_version() -> None:
+    request = {
+        "type": "health_request",
+        "protocol_version": PROCESS_PROTOCOL_VERSION,
+        "request_id": 1,
+        "extra": False,
+    }
+    with pytest.raises(ProcessProtocolError) as unknown:
+        parse_process_request(request)
+    assert unknown.value.code is ProcessErrorCode.UNKNOWN_FIELD
+
+    request.pop("extra")
+    request["protocol_version"] = "dxai.process.v0"
+    with pytest.raises(ProcessProtocolError) as version:
+        parse_process_request(request)
+    assert version.value.code is ProcessErrorCode.PROTOCOL_VERSION_MISMATCH
+
+
+def test_process_response_rejects_unknown_error_code() -> None:
+    with pytest.raises(ProcessProtocolError) as error:
+        parse_process_response(
+            {
+                "type": "error_response",
+                "protocol_version": PROCESS_PROTOCOL_VERSION,
+                "request_id": 1,
+                "process_state": "READY",
+                "error_code": "NOT_A_PROCESS_ERROR",
+                "error_message": "invalid",
+            }
+        )
+    assert error.value.code is ProcessErrorCode.PROTOCOL_MALFORMED_RESPONSE

@@ -148,9 +148,11 @@ selected = next(
 step = state.step(selected.candidate_id)
 ```
 
-The Python surface is intentionally single-use. It returns the next boundary
-as evidence, but it does not pretend to provide a second persistent step or a
-full reset service.
+The Python M0.3 surface is intentionally single-use. It returns the next
+boundary as evidence, but it does not provide a second persistent step or a
+full reset service. M0.4 adds that lifecycle in the separate
+`--env-stdio`/`dxai.process.v1` surface; the M0.3 one-shot contract remains
+unchanged.
 
 ## Evidence from the validated local run
 
@@ -217,8 +219,8 @@ python -m pytest -q tests\test_m03_real.py
 - only eight adjacent visible destinations are considered;
 - no `WAIT` fallback exists for a zero-supported-candidate state;
 - no attack, item, town, loot, exploration or terminal action exists;
-- no full `ResetRequest`/`StepRequest` IPC, persistent server, replay database
-  or multi-step process exists;
-- no full PROCESS_PROTOCOL compliance is claimed;
+- the one-shot M0.3 mode has no persistent `ResetRequest`/`StepRequest` IPC;
+  use the M0.4 runbook for the separate persistent worker;
+- the M0.3 mode does not claim the M0.4 process protocol;
 - the native fixture is controlled and asset-dependent; this is not global M0
   completion.

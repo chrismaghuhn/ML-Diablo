@@ -12,10 +12,11 @@ if(NOT DEVILUTIONX_SOURCE_DIR OR NOT DEVILUTIONX_BINARY_DIR OR NOT DEVILUTIONX_S
   message(FATAL_ERROR "DEVILUTIONX_SOURCE_DIR, DEVILUTIONX_BINARY_DIR and DEVILUTIONX_SHARED_LIBRARY are required")
 endif()
 
-add_executable(dxai_observation_probe main.cpp)
+add_executable(dxai_observation_probe main.cpp ../src/process_protocol.cpp)
 target_compile_features(dxai_observation_probe PRIVATE cxx_std_23)
 target_compile_definitions(dxai_observation_probe PRIVATE BUILD_TESTING SDL_MAIN_HANDLED)
 target_include_directories(dxai_observation_probe SYSTEM PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/../include"
   "${DEVILUTIONX_SOURCE_DIR}/Source"
   "${DEVILUTIONX_BINARY_DIR}/Source"
   "${DEVILUTIONX_BINARY_DIR}/Source/${DEVILUTIONX_CONFIG}"

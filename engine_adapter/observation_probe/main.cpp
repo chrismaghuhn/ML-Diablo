@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>
@@ -13,6 +14,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "dxai_bridge/process_protocol.hpp"
 
 #if defined(_WIN32)
 #define NOMINMAX
@@ -137,6 +140,7 @@ RuntimeDataPointers runtimeData;
 enum class ProbeMode {
 	Observation,
 	M03,
+	EnvironmentStdio,
 };
 
 struct SemanticCandidate {
@@ -267,6 +271,10 @@ Arguments ParseArguments(int argc, char **argv)
 	Arguments arguments;
 	for (int index = 1; index < argc; ++index) {
 		const std::string_view option = argv[index];
+		if (option == "--env-stdio") {
+			arguments.mode = ProbeMode::EnvironmentStdio;
+			continue;
+		}
 		if (index + 1 >= argc)
 			throw ProbeFailure(ProbeErrorCode::InvalidArgument, "missing value for " + std::string(option));
 		const std::string_view value = argv[++index];
@@ -288,6 +296,8 @@ Arguments ParseArguments(int argc, char **argv)
 				arguments.mode = ProbeMode::Observation;
 			} else if (value == "m03") {
 				arguments.mode = ProbeMode::M03;
+			} else if (value == "env-stdio") {
+				arguments.mode = ProbeMode::EnvironmentStdio;
 			} else {
 				throw ProbeFailure(ProbeErrorCode::InvalidArgument, "unsupported probe mode");
 			}
@@ -303,8 +313,13 @@ Arguments ParseArguments(int argc, char **argv)
 			throw ProbeFailure(ProbeErrorCode::InvalidArgument, "unknown option " + std::string(option));
 		}
 	}
-	if (arguments.assets.empty() || arguments.coreAssets.empty() || arguments.task.empty())
-		throw ProbeFailure(ProbeErrorCode::InvalidArgument, "--assets, --core-assets and --task are required");
+	if (arguments.assets.empty() || arguments.coreAssets.empty())
+		throw ProbeFailure(ProbeErrorCode::InvalidArgument, "--assets and --core-assets are required");
+	if (arguments.task.empty()) {
+		if (arguments.mode != ProbeMode::EnvironmentStdio)
+			throw ProbeFailure(ProbeErrorCode::InvalidArgument, "--task is required");
+		arguments.task = "combat.single_melee.v0";
+	}
 	if (arguments.task != "combat.single_melee.v0")
 		throw ProbeFailure(ProbeErrorCode::InvalidArgument, "unsupported probe task");
 	if (arguments.runtimeRoot.empty())
@@ -317,6 +332,10 @@ Arguments ParseArguments(int argc, char **argv)
 	    && (!arguments.expectedEpisodeId.has_value() || !arguments.expectedStepId.has_value()
         || !arguments.expectedCandidateSetSha256.has_value()))
 		throw ProbeFailure(ProbeErrorCode::InvalidArgument, "m03 action identity is incomplete");
+	if (arguments.mode == ProbeMode::EnvironmentStdio
+	    && (arguments.candidateId.has_value() || arguments.expectedEpisodeId.has_value()
+	        || arguments.expectedStepId.has_value() || arguments.expectedCandidateSetSha256.has_value()))
+		throw ProbeFailure(ProbeErrorCode::InvalidArgument, "action identity belongs in env-stdio requests");
 	return arguments;
 }
 
@@ -846,15 +865,19 @@ std::string SerializeObservation(
 	std::uint64_t stepId,
 	std::uint64_t engineTick,
 	std::string_view decisionReason,
-	std::string_view recentEvent)
+	std::string_view recentEvent,
+	std::string_view lifecycleEpisodeId = {})
 {
 	if (MyPlayer == nullptr)
 		throw ProbeFailure(ProbeErrorCode::ObservationContractFailed, "local player is unavailable");
 	std::ostringstream output;
 	const Point playerPosition = MyPlayer->position.tile;
+	const std::string episodeId = lifecycleEpisodeId.empty()
+	    ? "devilutionx-" + std::string(arguments.mode == ProbeMode::M03 ? "m03-" : "m02-")
+	          + std::to_string(arguments.seed)
+	    : std::string(lifecycleEpisodeId);
 	output << "{\"schema_version\":\"dxai.observation.v1\""
-	       << ",\"episode_id\":\"devilutionx-"
-	       << (arguments.mode == ProbeMode::M03 ? "m03-" : "m02-") << arguments.seed << '"'
+	       << ",\"episode_id\":" << JsonEscape(episodeId)
 	       << ",\"task_id\":" << JsonEscape(arguments.task)
 	       << ",\"seed\":" << arguments.seed
 	       << ",\"step_id\":" << stepId << ",\"engine_tick\":" << engineTick
@@ -929,6 +952,36 @@ void AdvancePinnedGameLogicBody()
 	ClearLastSentPlayerCmd();
 }
 
+std::uint64_t AdvanceUntilDecisionBoundary()
+{
+	std::uint64_t logicTicks = 0;
+	for (; logicTicks < ActionResolutionSafetyBound; ++logicTicks) {
+		AdvancePinnedGameLogicBody();
+		if (IsControllableDecisionBoundary()) {
+			++logicTicks;
+			break;
+		}
+	}
+	if (!IsControllableDecisionBoundary()) {
+		throw ProbeFailure(
+		    ProbeErrorCode::ActionResolutionFailed,
+		    "native action did not return to a controllable decision boundary within the safety bound");
+	}
+	return logicTicks;
+}
+
+void ExecuteMoveCandidate(const SemanticCandidate &candidate)
+{
+	ClrPlrPath(*MyPlayer);
+	MakePlrPath(*MyPlayer, candidate.targetTile, true);
+	*LoadExportedData<PlayerActionType>("?LastPlayerAction@devilution@@3W4PlayerActionType@1@A") = PlayerActionType::Walk;
+	if (MyPlayer->walkpath[0] == WALK_NONE) {
+		throw ProbeFailure(
+		    ProbeErrorCode::ActionResolutionFailed,
+		    "native MOVE_TO_TILE candidate did not queue a player path");
+	}
+}
+
 std::string RunM03(const Arguments &arguments)
 {
 	*LoadExportedData<bool>("?gbRunGame@devilution@@3_NA") = true;
@@ -977,33 +1030,14 @@ std::string RunM03(const Arguments &arguments)
 	}
 	const SemanticCandidate selectedCandidate = issuedCandidates[static_cast<std::size_t>(*arguments.candidateId)];
 
-	ClrPlrPath(*MyPlayer);
-	MakePlrPath(*MyPlayer, selectedCandidate.targetTile, true);
-	*LoadExportedData<PlayerActionType>("?LastPlayerAction@devilution@@3W4PlayerActionType@1@A") = PlayerActionType::Walk;
-	if (MyPlayer->walkpath[0] == WALK_NONE) {
-		throw ProbeFailure(
-		    ProbeErrorCode::ActionResolutionFailed,
-		    "native MOVE_TO_TILE candidate did not queue a player path");
-	}
+	ExecuteMoveCandidate(selectedCandidate);
 
 	// game_loop(false) is the pinned upstream aggregate semantic tick: it handles
 	// the network turn, calls the engine's GameLogic body, and clears the same
 	// per-tick command throttle. Its NetInit-dependent network prelude is outside
 	// this fixture, so AdvancePinnedGameLogicBody is the centralized lower-level
 	// equivalent for the no-network controlled slice.
-	std::uint64_t logicTicks = 0;
-	for (; logicTicks < ActionResolutionSafetyBound; ++logicTicks) {
-		AdvancePinnedGameLogicBody();
-		if (IsControllableDecisionBoundary()) {
-			++logicTicks;
-			break;
-		}
-	}
-	if (!IsControllableDecisionBoundary()) {
-		throw ProbeFailure(
-		    ProbeErrorCode::ActionResolutionFailed,
-		    "native action did not return to a controllable decision boundary within the safety bound");
-	}
+	const std::uint64_t logicTicks = AdvanceUntilDecisionBoundary();
 
 	const bool requestedTargetReached = MyPlayer->position.tile == selectedCandidate.targetTile;
 	const std::vector<SemanticCandidate> nextCandidates = GenerateMoveCandidates();
@@ -1032,6 +1066,397 @@ std::string RunM03(const Arguments &arguments)
 	    requestedTargetReached);
 }
 
+const char *ProcessStateName(dxai_bridge::ProcessState state)
+{
+	switch (state) {
+	case dxai_bridge::ProcessState::Ready:
+		return "READY";
+	case dxai_bridge::ProcessState::EpisodeActive:
+		return "EPISODE_ACTIVE";
+	case dxai_bridge::ProcessState::Faulted:
+		return "FAULTED";
+	}
+	return "FAULTED";
+}
+
+std::uint64_t ProcessId()
+{
+#if defined(_WIN32)
+	return static_cast<std::uint64_t>(GetCurrentProcessId());
+#else
+	return 0;
+#endif
+}
+
+std::string MakeLifecycleEpisodeId()
+{
+	static std::uint64_t counter = 0;
+	++counter;
+	std::uint64_t nonce = static_cast<std::uint64_t>(
+	    std::chrono::high_resolution_clock::now().time_since_epoch().count());
+#if defined(_WIN32)
+	std::uint64_t systemNonce = 0;
+	if (BCryptGenRandom(
+		    nullptr,
+		    reinterpret_cast<PUCHAR>(&systemNonce),
+		    static_cast<ULONG>(sizeof(systemNonce)),
+		    BCRYPT_USE_SYSTEM_PREFERRED_RNG)
+	    == 0) {
+		nonce = systemNonce;
+	}
+#endif
+	std::ostringstream result;
+	result << "dxai-m04-" << ProcessId() << '-' << counter << '-' << std::hex << nonce;
+	return result.str();
+}
+
+std::string SerializeProcessError(
+    std::optional<std::uint64_t> requestId,
+    dxai_bridge::ProcessState state,
+    dxai_bridge::ProcessErrorCode code,
+    std::string_view message)
+{
+	std::ostringstream output;
+	output << "{\"type\":\"error_response\",\"protocol_version\":"
+	       << JsonEscape(dxai_bridge::kProcessProtocolVersion)
+	       << ",\"request_id\":";
+	if (requestId.has_value())
+		output << *requestId;
+	else
+		output << "null";
+	output << ",\"process_state\":" << JsonEscape(ProcessStateName(state))
+	       << ",\"error_code\":" << JsonEscape(dxai_bridge::ProcessErrorCodeName(code))
+	       << ",\"error_message\":" << JsonEscape(message) << '}';
+	return output.str();
+}
+
+std::string SerializeHealthResponse(std::uint64_t requestId, dxai_bridge::ProcessState state)
+{
+	std::ostringstream output;
+	output << "{\"type\":\"health_response\",\"protocol_version\":"
+	       << JsonEscape(dxai_bridge::kProcessProtocolVersion)
+       << ",\"request_id\":" << requestId
+       << ",\"process_state\":" << JsonEscape(ProcessStateName(state))
+       << ",\"adapter_revision\":\"m0.4\""
+       << ",\"devilutionx_revision\":\"07385842840437cc9a785b195f5b40b121eaeb1c\""
+       << ",\"build_fingerprint\":\"dxai-ml-diablo-m0.4\""
+       << ",\"observation_version\":\"dxai.observation.v1\""
+       << ",\"action_version\":\"dxai.action.v1\""
+       << ",\"supported_task_versions\":[\"combat.single_melee.v0\"]"
+       << ",\"supported_features\":[\"MOVE_TO_TILE\",\"cold_reset\",\"request_idempotency\"]"
+       << ",\"pid\":" << ProcessId() << '}';
+	return output.str();
+}
+
+std::string SerializeResetResponse(
+    std::uint64_t requestId,
+    std::string_view episodeId,
+    std::string_view observation,
+    std::string_view candidateSetSha256)
+{
+	std::ostringstream output;
+	output << "{\"type\":\"reset_response\",\"protocol_version\":"
+       << JsonEscape(dxai_bridge::kProcessProtocolVersion)
+       << ",\"request_id\":" << requestId
+       << ",\"process_state\":\"EPISODE_ACTIVE\""
+       << ",\"episode_id\":" << JsonEscape(episodeId)
+       << ",\"observation\":" << observation
+       << ",\"candidate_set_sha256\":" << JsonEscape(candidateSetSha256) << '}';
+	return output.str();
+}
+
+std::string SerializePersistentStepResponse(
+    std::uint64_t requestId,
+    std::string_view episodeId,
+    std::uint64_t previousStepId,
+    const SemanticCandidate &appliedCandidate,
+    std::string_view previousCandidateSetSha256,
+    std::string_view observation,
+    std::string_view candidateSetSha256)
+{
+	std::ostringstream output;
+	output << "{\"type\":\"step_response\",\"protocol_version\":"
+       << JsonEscape(dxai_bridge::kProcessProtocolVersion)
+       << ",\"request_id\":" << requestId
+       << ",\"process_state\":\"EPISODE_ACTIVE\""
+       << ",\"episode_id\":" << JsonEscape(episodeId)
+       << ",\"previous_step_id\":" << previousStepId
+       << ",\"applied_action\":";
+	AppendActionCandidate(output, appliedCandidate);
+	output << ",\"previous_candidate_set_sha256\":"
+       << JsonEscape(previousCandidateSetSha256)
+       << ",\"observation\":" << observation
+       << ",\"candidate_set_sha256\":" << JsonEscape(candidateSetSha256) << '}';
+	return output.str();
+}
+
+dxai_bridge::ProcessErrorCode ProcessErrorFromProbe(ProbeErrorCode code)
+{
+	switch (code) {
+	case ProbeErrorCode::InvalidArgument:
+		return dxai_bridge::ProcessErrorCode::InvalidField;
+	case ProbeErrorCode::AssetDataUnavailable:
+		return dxai_bridge::ProcessErrorCode::AssetDataUnavailable;
+	case ProbeErrorCode::EngineInitializationFailed:
+		return dxai_bridge::ProcessErrorCode::EngineInitializationFailed;
+	case ProbeErrorCode::ObservationContractFailed:
+		return dxai_bridge::ProcessErrorCode::ObservationContractFailed;
+	case ProbeErrorCode::CandidateRejected:
+		return dxai_bridge::ProcessErrorCode::CandidateRejected;
+	case ProbeErrorCode::StateMismatch:
+		return dxai_bridge::ProcessErrorCode::StateMismatch;
+	case ProbeErrorCode::StaleCandidate:
+		return dxai_bridge::ProcessErrorCode::StaleCandidate;
+	case ProbeErrorCode::NoSupportedCandidates:
+		return dxai_bridge::ProcessErrorCode::NoSupportedCandidates;
+	case ProbeErrorCode::ActionResolutionFailed:
+		return dxai_bridge::ProcessErrorCode::ActionResolutionFailed;
+	case ProbeErrorCode::Internal:
+		return dxai_bridge::ProcessErrorCode::Internal;
+	}
+	return dxai_bridge::ProcessErrorCode::Internal;
+}
+
+class EnvironmentWorker final {
+public:
+	explicit EnvironmentWorker(const Arguments &arguments)
+		: arguments_(arguments)
+	{
+	}
+
+	int Run()
+	{
+		for (;;) {
+			std::string line;
+			dxai_bridge::ProcessProtocolError lineError;
+			const auto readResult = dxai_bridge::ReadProcessLine(std::cin, line, lineError);
+			if (readResult == dxai_bridge::ReadLineResult::Eof)
+				return 0;
+			if (readResult == dxai_bridge::ReadLineResult::Error) {
+				lifecycle_.Fault();
+				WriteProtocolResponse(SerializeProcessError(
+				    std::nullopt,
+				    lifecycle_.state(),
+				    lineError.code,
+				    lineError.message));
+				continue;
+			}
+
+			dxai_bridge::ProcessRequest request;
+			dxai_bridge::ProcessProtocolError parseError;
+			if (!dxai_bridge::ParseProcessRequest(line, request, parseError)) {
+				lifecycle_.Fault();
+				WriteProtocolResponse(SerializeProcessError(
+				    std::nullopt,
+				    lifecycle_.state(),
+				    parseError.code,
+				    parseError.message));
+				continue;
+			}
+
+			const std::string fingerprint = request.Fingerprint();
+			std::string replay;
+			dxai_bridge::ProcessProtocolError cacheError;
+			if (requestCache_.ReplayOrMiss(request.requestId, fingerprint, replay, cacheError)) {
+				WriteProtocolResponse(replay);
+				continue;
+			}
+			if (!cacheError.message.empty()) {
+				WriteProtocolResponse(SerializeProcessError(
+				    request.requestId,
+				    lifecycle_.state(),
+				    cacheError.code,
+				    cacheError.message));
+				continue;
+			}
+
+			std::string response;
+			try {
+				response = HandleRequest(request);
+			} catch (const ProbeFailure &failure) {
+				lifecycle_.Fault();
+				response = SerializeProcessError(
+				    request.requestId,
+				    lifecycle_.state(),
+				    ProcessErrorFromProbe(failure.code()),
+				    failure.what());
+			} catch (const std::exception &exception) {
+				lifecycle_.Fault();
+				response = SerializeProcessError(
+				    request.requestId,
+				    lifecycle_.state(),
+				    dxai_bridge::ProcessErrorCode::Internal,
+				    exception.what());
+			}
+
+			dxai_bridge::ProcessProtocolError rememberError;
+			if (!requestCache_.Remember(request.requestId, fingerprint, response, rememberError)) {
+				lifecycle_.Fault();
+				response = SerializeProcessError(
+				    request.requestId,
+				    lifecycle_.state(),
+				    rememberError.code,
+				    rememberError.message);
+			}
+			WriteProtocolResponse(response);
+		}
+	}
+
+private:
+	std::string HandleRequest(const dxai_bridge::ProcessRequest &request)
+	{
+		switch (request.type) {
+		case dxai_bridge::ProcessRequestType::Health:
+			return SerializeHealthResponse(request.requestId, lifecycle_.state());
+		case dxai_bridge::ProcessRequestType::Reset:
+			return HandleReset(request);
+		case dxai_bridge::ProcessRequestType::Step:
+			return HandleStep(request);
+		}
+		return SerializeProcessError(
+		    request.requestId,
+		    lifecycle_.state(),
+		    dxai_bridge::ProcessErrorCode::UnknownMessageType,
+		    "unsupported process request type");
+	}
+
+	std::string HandleReset(const dxai_bridge::ProcessRequest &request)
+	{
+		if (lifecycle_.state() != dxai_bridge::ProcessState::Ready)
+			return SerializeProcessError(
+			    request.requestId,
+			    lifecycle_.state(),
+			    dxai_bridge::ProcessErrorCode::InvalidState,
+			    "worker accepts exactly one Reset");
+		if (request.taskId != "combat.single_melee.v0")
+			return SerializeProcessError(
+			    request.requestId,
+			    lifecycle_.state(),
+			    dxai_bridge::ProcessErrorCode::InvalidField,
+			    "unsupported process task");
+
+		activeArguments_ = arguments_;
+		activeArguments_.mode = ProbeMode::EnvironmentStdio;
+		activeArguments_.seed = request.seed;
+		activeArguments_.task = request.taskId;
+		InitializeEngine(activeArguments_);
+		*LoadExportedData<bool>("?gbRunGame@devilution@@3_NA") = true;
+		*LoadExportedData<bool>("?gbProcessPlayers@devilution@@3_NA") = true;
+		PauseMode = 0;
+		if (!IsControllableDecisionBoundary())
+			throw ProbeFailure(ProbeErrorCode::EngineInitializationFailed, "environment reset is not controllable");
+
+		currentCandidates_ = GenerateMoveCandidates();
+		if (currentCandidates_.empty())
+			throw ProbeFailure(
+			    ProbeErrorCode::NoSupportedCandidates,
+			    "reset boundary has no supported visible adjacent MOVE_TO_TILE candidate");
+		currentCandidateKey_ = CanonicalCandidateSetKey(currentCandidates_);
+		currentCandidateSetSha256_ = Sha256(currentCandidateKey_);
+		episodeId_ = MakeLifecycleEpisodeId();
+		engineTick_ = 0;
+		dxai_bridge::ProcessProtocolError lifecycleError;
+		if (!lifecycle_.BeginEpisode(episodeId_, currentCandidateSetSha256_, lifecycleError))
+			throw std::runtime_error(lifecycleError.message);
+		const std::string observation = SerializeObservation(
+		    activeArguments_,
+		    currentCandidates_,
+		    lifecycle_.stepId(),
+		    engineTick_,
+		    "PLAYER_READY",
+		    "EPISODE_RESET",
+		    episodeId_);
+		return SerializeResetResponse(
+		    request.requestId,
+		    episodeId_,
+		    observation,
+		    currentCandidateSetSha256_);
+	}
+
+	std::string HandleStep(const dxai_bridge::ProcessRequest &request)
+	{
+		dxai_bridge::ProcessProtocolError lifecycleError;
+		if (!lifecycle_.ValidateStep(
+		        request.episodeId,
+		        request.expectedStepId,
+		        request.candidateSetSha256,
+		        lifecycleError))
+			return SerializeProcessError(
+			    request.requestId,
+			    lifecycle_.state(),
+			    lifecycleError.code,
+			    lifecycleError.message);
+
+		const std::vector<SemanticCandidate> regeneratedCandidates = GenerateMoveCandidates();
+		const std::string regeneratedKey = CanonicalCandidateSetKey(regeneratedCandidates);
+		if (regeneratedKey != currentCandidateKey_ || Sha256(regeneratedKey) != currentCandidateSetSha256_)
+			return SerializeProcessError(
+			    request.requestId,
+			    lifecycle_.state(),
+			    dxai_bridge::ProcessErrorCode::StateMismatch,
+			    "candidate set changed before execution");
+		if (request.candidateId >= currentCandidates_.size())
+			return SerializeProcessError(
+			    request.requestId,
+			    lifecycle_.state(),
+			    dxai_bridge::ProcessErrorCode::InvalidCandidate,
+			    "candidate_id is not legal for this decision");
+
+		const std::uint64_t previousStepId = lifecycle_.stepId();
+		const std::string previousCandidateSetSha256 = currentCandidateSetSha256_;
+		const SemanticCandidate selectedCandidate = currentCandidates_[request.candidateId];
+		ExecuteMoveCandidate(selectedCandidate);
+		const std::uint64_t logicTicks = AdvanceUntilDecisionBoundary();
+		engineTick_ += logicTicks;
+
+		std::vector<SemanticCandidate> nextCandidates = GenerateMoveCandidates();
+		if (nextCandidates.empty())
+			throw ProbeFailure(
+			    ProbeErrorCode::NoSupportedCandidates,
+			    "next decision boundary has no supported visible adjacent MOVE_TO_TILE candidate");
+		const std::string nextKey = CanonicalCandidateSetKey(nextCandidates);
+		const std::string nextHash = Sha256(nextKey);
+		const std::uint64_t nextStepId = previousStepId + 1;
+		const std::string nextObservation = SerializeObservation(
+		    activeArguments_,
+		    nextCandidates,
+		    nextStepId,
+		    engineTick_,
+		    "PLAYER_READY",
+		    "M04_ACTION_RESOLVED",
+		    episodeId_);
+		dxai_bridge::ProcessProtocolError completionError;
+		if (!lifecycle_.CompleteStep(episodeId_, nextStepId, nextHash, completionError))
+			throw std::runtime_error(completionError.message);
+		currentCandidates_ = std::move(nextCandidates);
+		currentCandidateKey_ = nextKey;
+		currentCandidateSetSha256_ = nextHash;
+		return SerializePersistentStepResponse(
+		    request.requestId,
+		    episodeId_,
+		    previousStepId,
+		    selectedCandidate,
+		    previousCandidateSetSha256,
+		    nextObservation,
+		    currentCandidateSetSha256_);
+	}
+
+	static void WriteProtocolResponse(std::string_view response)
+	{
+		std::cout << response << '\n' << std::flush;
+	}
+
+	Arguments arguments_;
+	Arguments activeArguments_;
+	dxai_bridge::ProcessLifecycle lifecycle_;
+	dxai_bridge::RequestCache requestCache_;
+	std::string episodeId_;
+	std::uint64_t engineTick_ {};
+	std::vector<SemanticCandidate> currentCandidates_;
+	std::string currentCandidateKey_;
+	std::string currentCandidateSetSha256_;
+};
+
 void WriteError(const ProbeFailure &failure)
 {
 	std::cerr << "{\"error_code\":" << JsonEscape(ErrorCodeName(failure.code()))
@@ -1044,6 +1469,10 @@ int main(int argc, char **argv)
 {
 	try {
 		const Arguments arguments = ParseArguments(argc, argv);
+		if (arguments.mode == ProbeMode::EnvironmentStdio) {
+			EnvironmentWorker worker(arguments);
+			return worker.Run();
+		}
 		InitializeEngine(arguments);
 		if (arguments.mode == ProbeMode::M03) {
 			std::cout << RunM03(arguments) << '\n';

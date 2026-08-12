@@ -4,6 +4,18 @@ Gründliches, nicht-kommerzielles Forschungs-Scaffold für einen lernenden Diabl
 
 > **Aktueller Status:** Die Verträge, der deterministische Mock, Trajektorienaufzeichnung, Replay-Grundlagen, ein dynamisches rekurrentes Candidate-Q-Netz, Tests und ein separat kompilierbarer C++-Bridge-Vertrag sind implementiert. Die echte DevilutionX-Bridge und der vollständige R2D3-Learner sind absichtlich noch nicht als fertig markiert.
 
+## M0.4 Persistent Environment Lifecycle
+
+M0.4 adds a persistent `--env-stdio` worker and Python cold-reset manager for
+the controlled `combat.single_melee.v0` slice. The authoritative process
+protocol is strict `dxai.process.v1` JSON-Lines with Health/Reset/Step/Error,
+`READY`/`EPISODE_ACTIVE`/`FAULTED`, unique episode IDs, step and candidate-set
+identity checks, bounded request idempotency, and stdout/stderr isolation.
+Only the existing native `MOVE_TO_TILE` candidate is supported. Rewards,
+terminal flags, warm reset and learner paths remain out of scope. The real
+32-step gate still requires external user-owned engine/data inputs; see the
+[`M0.4 runbook`](docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md).
+
 ## Ziel
 
 Ein Agent soll mit einem frischen Charakter autonom lernen:
@@ -113,9 +125,17 @@ naechste Observation und eine frische Candidate-Liste.
 Die generische Boundary verlangt nicht, dass das angeforderte Ziel erreicht
 wird. Die kontrollierte Fixture prueft das fuer den dokumentierten Nachbarschritt
 separat. Es gibt weiterhin kein `WAIT`-Fallback, keine weiteren Actions, kein
-persistent IPC und kein ML. Siehe
+persistent IPC in der M0.3-Einshot-Probe und kein ML. M0.4 stellt den
+separaten persistenten Worker bereit. Siehe
 [`docs/runbooks/M03_FIRST_STEP.md`](docs/runbooks/M03_FIRST_STEP.md) fuer
 Candidate-Identity, Leak-Audit, Safety-Bound und Hashnachweis.
+
+## M0.4 verifizierbare Prozessgrenze
+
+Der M0.4-Worker wird mit `--env-stdio` gestartet; Python sendet pro Step nur
+`candidate_id`, `episode_id`, erwartete `step_id` und den aktuellen
+Candidate-Set-Digest. Die vollständigen Felder und Fehlerregeln stehen in
+[`docs/contracts/PROCESS_PROTOCOL.md`](docs/contracts/PROCESS_PROTOCOL.md).
 
 ## Separater C++-Contract-Test
 
