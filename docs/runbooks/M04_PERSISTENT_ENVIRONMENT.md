@@ -137,7 +137,7 @@ cmake --build build\observation_probe-vs --config Release --parallel 4
 git diff --check
 ```
 
-## Local evidence and blocker
+## Local evidence
 
 The final repository-only verification on 2026-08-12 reported:
 
@@ -154,14 +154,38 @@ observation_probe Release: built
 git diff --check:        passed
 ```
 
-The 32-step real gate remains `[BLOCKER]`: none of the four `DXAI_M04_*`
-inputs was configured. A direct Health-only smoke against the repository's
-probe artifact with placeholder external paths exited with Windows status
-`-1073741515` before emitting a protocol line, confirming that the external
-runtime DLL/build inputs are unavailable in this workspace. No proprietary
-assets are copied into this repository. Until the real gate runs, claims about
-a persistent DevilutionX PID, 32-step throughput, native duplicate replay or
-A -> B -> A contamination remain unverified.
+The real-asset acceptance gate passed on 2026-08-12 using external,
+user-owned Diablo data, the clean pinned DevilutionX checkout and its Release
+runtime. No proprietary asset or sensitive local path is stored here.
+
+```text
+Health/Handshake:             PASS
+Reset(seed=123):              PASS
+same-worker semantic Steps:   32 PASS, step_id 0 -> 32
+worker PID continuity:        PASS
+duplicate exactly-once:       PASS
+changed-payload reuse:        PASS (REQUEST_ID_REUSE)
+wrong-step oracle:            PASS (STALE_STEP)
+invalid-candidate oracle:     PASS (INVALID_CANDIDATE)
+stale episode / new IDs:      PASS
+A -> B -> A reset:            PASS
+same-seed independent trace:  PASS
+stdout/stderr purity:         PASS
+worker cleanup/reaping:       PASS
+```
+
+Canonical trace hashes, with only documented lifecycle metadata normalized:
+
+```text
+32-step trace (both independent workers):
+4e906aa70e2ad64ec790074d55a15802192aae8b1508708551a65a476825d336
+A1 / A2 (8 steps):
+92b4939801f88937fecaea40c0d172aca36b98fa0ec27cd8f0deea5b603cc33a
+```
+
+The gate proves the M0.4 persistent lifecycle only. Rewards, terminal
+semantics, warm reset, broader actions, replay learning, throughput and ML
+remain outside this milestone.
 
 ## Explicit non-goals
 

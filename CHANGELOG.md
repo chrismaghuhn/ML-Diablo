@@ -10,8 +10,12 @@
   bounded 128-entry request idempotency and Python cold-reset replacement.
 - Added stdout protocol isolation, stderr diagnostics, canonical lifecycle
   trace hashing, native/Python contract tests and an opt-in 32-step real gate.
+- Validated the real asset-dependent gate against the pinned DevilutionX
+  release and user-owned local data: Health/Reset, 32 same-worker Steps,
+  exactly-once duplicate replay, rejection non-mutation, cold-reset isolation,
+  same-seed trace equality and worker cleanup all passed.
 - Kept rewards, terminal flags, warm reset, broader actions, replay and ML out
-  of scope; the real asset-dependent gate remains open without external inputs.
+  of scope; global M0 acceptance remains separate.
 
 ## M0.3 - 2026-08-12
 

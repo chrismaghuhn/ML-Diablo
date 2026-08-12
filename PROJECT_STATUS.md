@@ -61,10 +61,30 @@ folgen in M0.3/M0.
 - kanonischer Trace-Hash, der nur Lifecycle-Metadaten normalisiert;
 - native und Python Contract-/Lifecycle-Tests sowie Release-Build der Probe.
 
-Die user-owned Runtime-/Asset-/Datenpfade waren in der lokalen Umgebung nicht
-als `DXAI_M04_*` konfiguriert. Daher sind 32 echte Steps in einem PID,
-native Duplicate-Replay und A -> B -> A im echten DevilutionX-Prozess noch
-nicht bestätigt.
+### M0.4 Real-Asset Acceptance Gate (2026-08-12)
+
+- Health/Handshake gegen den gepinnten DevilutionX-Release bestanden;
+  `dxai.process.v1`, Adapter `m0.4`, Observation/Action `v1` und
+  `combat.single_melee.v0` wurden bestätigt;
+- Reset mit Seed `123` auf `EPISODE_ACTIVE`, `step_id=0`, Position `(79,58)`,
+  `engine_tick=0` und acht nativen `MOVE_TO_TILE`-Kandidaten bestanden;
+- 32 erfolgreiche Steps im selben nativen Worker bestanden: `0 -> 32`,
+  monotoner Engine-Tick `0 -> 320`, Position `(79,58) -> (75,58)`;
+- Duplicate-Exactly-Once bestanden: identische Antwort, einmaliger Schritt,
+  einmalige Engine-Tick-/Positionsänderung; geänderte Payload mit derselben
+  Request-ID wurde als `REQUEST_ID_REUSE` abgewiesen;
+- `STALE_STEP`- und `INVALID_CANDIDATE`-Reject-Oracles bestanden, jeweils mit
+  identischem Kontroll-Hash nach dem folgenden gültigen Schritt;
+- stale Episode, neue Same-Seed-Episode-IDs, A -> B -> A Cold-Reset und
+  unabhängige Same-Seed-32-Step-Traces bestanden;
+- nicht-sensitive kanonische Evidenz: 32-Step
+  `4e906aa70e2ad64ec790074d55a15802192aae8b1508708551a65a476825d336`,
+  A1/A2 `92b4939801f88937fecaea40c0d172aca36b98fa0ec27cd8f0deea5b603cc33a`,
+  Reject-Oracle `533715ff5eb3f81c547ac6e3569fae1621526ce1f73ccb0fc5b007c72f2f7589`;
+- stdout enthielt ausschließlich Protocol-Frames, stderr keine sensiblen
+  Pfade, Worker wurden bei Cold Reset und idempotentem Close beendet;
+- externe Originaldaten, Core-Assets, Runtime-DLLs und temporäre Spielausgaben
+  blieben außerhalb des Repositories.
 
 ## Noch nicht implementiert
 

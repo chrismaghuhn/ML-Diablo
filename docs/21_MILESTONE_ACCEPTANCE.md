@@ -139,9 +139,12 @@ process contract and Python cold-reset boundary, not the global M0 acceptance.
 - [x] no reward, terminal, learner, warm-reset or broader-action fields;
 - [x] repository-only Python/native tests, schema validation, lint, types and
   Release builds pass;
-- [ ] 32 successful real Steps in one PID using configured user-owned assets;
-- [ ] real same-seed semantic trace equality and A -> B -> A contamination
+- [x] 32 successful real Steps in one PID using configured user-owned assets;
+- [x] real same-seed semantic trace equality and A -> B -> A contamination
   evidence;
+- [x] duplicate exactly-once replay, changed-payload rejection and
+  wrong-step/invalid-candidate non-mutation oracles;
+- [x] stale-episode rejection, process cleanup and protocol-only stdout;
 - [ ] global M0 reset/replay/throughput/soak acceptance.
 
 ## M1 — Single Melee
