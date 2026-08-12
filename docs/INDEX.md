@@ -45,6 +45,7 @@
 - [M0.2 First Real Observation](runbooks/M02_OBSERVATION.md)
 - [M0.3 First Semantic Step](runbooks/M03_FIRST_STEP.md)
 - [M0.4 Persistent Environment Lifecycle](runbooks/M04_PERSISTENT_ENVIRONMENT.md)
+- [M0.5 Replay, Soak, Throughput & Process Isolation](runbooks/M05_REPLAY_SOAK_THROUGHPUT.md)
 
 ## Architekturentscheidungen
 

@@ -45,6 +45,18 @@ semantischen Trace-Hash erzeugen, ohne eine globale Episode-ID oder einen
 Prozess-Hash künstlich wiederzuverwenden. Der opt-in M0.4-Realtest prüft dies
 über mindestens 32 Steps in einem Worker und über einen A -> B -> A Reset.
 
+## M0.5 Engine-Replay
+
+`dxai.engine_replay.v1` ist ein Environment-Reproduzierbarkeitsartefakt und
+kein Trainingstrajektorien- oder Replaybufferformat. Seine semantische Spur
+enthält die vollständige geschlossene Action-Payload, Vorher-/Nachher-
+Observation- und Candidate-Set-Hashes sowie Engine-Ticks. Candidate-ID,
+Label, Auxiliary-Features, Prozess-ID, Runtime-Wurzel und Zeitstempel definieren
+keine semantische Identität. Playback löst die Payload gegen die aktuelle
+vollständige Candidate-Liste auf und bricht beim ersten Unterschied mit
+`REPLAY_DIVERGENCE` ab. Rewards, Terminal-/Truncation-Flags und Events gehören
+nicht in dieses Format.
+
 ## M0.3 Candidate-Set-Identität
 
 Der erste reale Step verwendet eine kanonische, geordnete Darstellung:

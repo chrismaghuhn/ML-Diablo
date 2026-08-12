@@ -1,5 +1,19 @@
 # Replayvertrag
 
+## Zwei getrennte Bedeutungen
+
+Der Trainings-Replaybuffer unten ist nicht dasselbe wie das M0.5-
+Environment-Replay. `dxai.engine_replay.v1` ist ein geschlossenes,
+atomar veröffentlichtes Reproduzierbarkeitsartefakt für den bestehenden
+M0.4-Worker. Es enthält vollständige semantische Actions, Observation-/
+Candidate-Set-Identitäten und Engine-Ticks, aber keine Rewards, Terminal- oder
+Truncation-Felder, Behavior-Policy, TD-Fehler oder Prioritätsmetadaten.
+
+Beim Playback wird die aufgezeichnete semantische Action gegen die aktuelle
+vollständige Candidate-Liste aufgelöst; nur die aktuell vergebene
+`candidate_id` wird an den Worker gesendet. Jede Abweichung wird als erste
+`REPLAY_DIVERGENCE` mit Step und Komponente gemeldet und beendet den Lauf.
+
 ## Sequenzen
 
 Rekurrentes Training sampelt zusammenhängende Sequenzen, niemals isolierte zufällige Übergänge. Eine Sequenz darf keine Episodengrenze überschreiten.

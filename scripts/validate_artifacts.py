@@ -60,6 +60,8 @@ def validate_examples(store: dict[str, dict[str, Any]]) -> int:
         "probe_step.example.json": "probe_step.schema.json",
         "episode_manifest.example.json": "episode_manifest.schema.json",
         "checkpoint.example.json": "checkpoint.schema.json",
+        "engine_replay_manifest.example.json": "engine_replay_manifest.schema.json",
+        "engine_replay_step.example.json": "engine_replay_step.schema.json",
     }
     for example, schema in mapping.items():
         validator(schema, store).validate(load_json(SCHEMA_DIR / "examples" / example))

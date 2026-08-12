@@ -5,6 +5,7 @@ import queue
 import subprocess
 import tempfile
 import threading
+import time
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Protocol
@@ -200,6 +201,7 @@ class DevilutionXEnvironment:
         self._next_request_id = 1
         self._worker_counter = 0
         self._health: HealthResponse | None = None
+        self._last_worker_startup_ns: int | None = None
 
     @property
     def observation(self) -> Observation | None:
@@ -208,6 +210,10 @@ class DevilutionXEnvironment:
     @property
     def health(self) -> HealthResponse | None:
         return self._health
+
+    @property
+    def last_worker_startup_ns(self) -> int | None:
+        return self._last_worker_startup_ns
 
     @property
     def worker_pid(self) -> int | None:
@@ -322,6 +328,25 @@ class DevilutionXEnvironment:
         self._candidate_set_sha256 = response.candidate_set_sha256
         return response
 
+    def health_check(self) -> HealthResponse:
+        if self._worker is None:
+            raise ProcessProtocolError(ProcessErrorCode.INVALID_STATE, "worker is not usable")
+        health_value = self._request(make_health_request(self._next_id()))
+        if not isinstance(health_value, HealthResponse):
+            raise ProcessProtocolError(
+                ProcessErrorCode.PROTOCOL_MALFORMED_RESPONSE,
+                "Health request did not return HealthResponse",
+            )
+        health_value.validate_identity()
+        if health_value.process_state is ProcessState.FAULTED:
+            raise ProcessProtocolError(
+                ProcessErrorCode.ENGINE_FAULTED,
+                "worker health reports a faulted process",
+                request_id=health_value.request_id,
+            )
+        self._health = health_value
+        return health_value
+
     def close(self) -> None:
         self._discard_worker()
         self._health = None
@@ -340,6 +365,7 @@ class DevilutionXEnvironment:
         return request_id
 
     def _start_worker(self) -> _WorkerHandle:
+        self._last_worker_startup_ns = None
         if not self.executable.is_file():
             raise ProcessProtocolError(
                 ProcessErrorCode.PROCESS_EXITED, "worker executable does not exist"
@@ -375,12 +401,15 @@ class DevilutionXEnvironment:
                 (str(self.engine_runtime_path), environment.get("PATH", ""))
             )
         try:
-            return self._worker_factory(
+            startup_started = time.perf_counter_ns()
+            worker = self._worker_factory(
                 command,
                 environment,
                 self.timeout_seconds,
                 MAX_PROCESS_FRAME_BYTES,
             )
+            self._last_worker_startup_ns = time.perf_counter_ns() - startup_started
+            return worker
         except ProcessProtocolError:
             raise
         except OSError as error:

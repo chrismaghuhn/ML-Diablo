@@ -1,0 +1,22 @@
+{
+  "step_id": 0,
+  "observation_before_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_set_before_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "action": {
+    "kind": "MOVE_TO_TILE",
+    "target_entity_id": null,
+    "target_tile": {"x": 80, "y": 59},
+    "inventory_slot": null,
+    "equipment_slot": null,
+    "belt_slot": null,
+    "spell_id": null,
+    "store_item_id": null,
+    "stat_id": null
+  },
+  "action_canonical_key": "kind=MOVE_TO_TILE;target_entity_id=null;target_tile=80,59;inventory_slot=null;equipment_slot=null;belt_slot=null;spell_id=null;store_item_id=null;stat_id=null",
+  "recorded_candidate_id": 3,
+  "observation_after_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "candidate_set_after_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "engine_tick_before": 0,
+  "engine_tick_after": 10
+}

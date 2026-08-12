@@ -54,18 +54,29 @@ The Python manager replaces the worker for every Reset and treats timeout,
 EOF, crash and malformed responses as unusable-worker conditions. M0.4 does
 not add rewards, terminal flags, learner paths, warm reset, broader actions,
 parallel workers or replay storage. The repository-only tests and builds are
-verifiable; the 32-step real-asset gate remains open until the user-owned
-DevilutionX runtime, core assets and Diablo data are configured. See
+verifiable, and the M0.4 real-asset evidence is recorded in
+`PROJECT_STATUS.md` and `RELEASE_VALIDATION.md`. See
 [`docs/runbooks/M04_PERSISTENT_ENVIRONMENT.md`](runbooks/M04_PERSISTENT_ENVIRONMENT.md).
 
 ## M0.5 — Durchsatz und Replay
 
-1. 1000 Episoden ohne Ressourcenleck.
-2. Warm reset gegen Prozessneustart benchmarken.
-3. Replay-Playback gegen aufgezeichnete semantische Aktionen.
-4. deterministische Event-/Reward-Ableitung.
-5. Batch-/Vector-Environment-Prozessmanager.
-6. Speichernutzung und Episoden/s reporten.
+M0.5 implements the environment-reproducibility slice without redefining
+M0.4:
+
+1. registered `dxai.engine_replay.v1` artifacts with full closed semantic
+   actions, atomic manifest-last publication and strict validation;
+2. replay by current candidate-set resolution, with first-step
+   `REPLAY_DIVERGENCE` and fail-closed playback;
+3. cold-reset, legal-step, long-worker and throughput harness modes, including
+   startup, Health, Reset, Step and 1/2/4-slot process-isolation measurements;
+4. a synchronous vector manager composed from existing M0.4 environments and
+   observational resource/failure diagnostics.
+
+Warm reset, rewards, terminal/truncation flags and engine-event derivation
+remain deferred. The real 100-recording/1,000-playback, 10,000-Step,
+1,000-episode and parallel-worker gates require external user-owned inputs and
+are reported as pending when those inputs are absent. See
+[`docs/runbooks/M05_REPLAY_SOAK_THROUGHPUT.md`](runbooks/M05_REPLAY_SOAK_THROUGHPUT.md).
 
 ## M1 — Combat-Slice
 

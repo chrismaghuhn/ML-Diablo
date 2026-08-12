@@ -24,6 +24,10 @@ Eine Transition enthält:
 - terminated/truncated;
 - Behavior-Metadaten, etwa Policyversion und epsilon.
 
+`dxai.engine_replay.v1` ist davon getrennt. Ein Engine-Replay-Schritt enthält
+keine Reward-, Terminal-, Truncation-, Behavior- oder TD-Felder und darf nicht
+als Trainingstransition oder Prioritäts-Replaybuffer-Eintrag ingestiert werden.
+
 ## Invarianten
 
 - Step IDs beginnen bei null und sind lückenlos;

@@ -18,6 +18,8 @@ Version: `0.1.0`
 - C++20-Bridge-Contract;
 - persistenter M0.4-Worker mit `dxai.process.v1`, Cold-Reset-Manager,
   Lifecycle-/Idempotenztests und kanonischem Trace-Hash;
+- M0.5 `dxai.engine_replay.v1`, semantischer Replay-Auflösung,
+  Prozess-Vektor-Manager sowie Soak-/Durchsatz-Harness und Diagnostik;
 - Protobuf-Entwurf, JSON Schemas, CI und Runbooks.
 
 ## M0.1 lokal geprueft
@@ -86,9 +88,26 @@ folgen in M0.3/M0.
 - externe Originaldaten, Core-Assets, Runtime-DLLs und temporäre Spielausgaben
   blieben außerhalb des Repositories.
 
+## M0.5 implementiert, Realabnahme ausstehend
+
+Die Repository-Implementierung umfasst das geschlossene
+`dxai.engine_replay.v1`-Format, zentrale Schema-/Validator-Registrierung,
+atomare manifest-lastige Veröffentlichung, fail-closed Playback mit
+semantischer Candidate-Auflösung, den synchronen 1/2/4-Slot-
+Prozessmanager sowie beobachtende Soak-/Durchsatzmetriken. Rewards,
+Terminal-/Truncation-Flags, Engine-Events und Warm Reset bleiben außerhalb
+des Scopes.
+
+Die Real-Gates (100 Aufzeichnungen, 1.000 Playbacks, 10.000 gültige Steps,
+1.000 Cold-Reset-Episoden und parallele Real-Worker) werden nur mit externen
+Benutzerinputs ausgeführt. In der aktuellen Session fehlen diese Inputs; der
+Harness meldet daher `PENDING_EXTERNAL_INPUTS` und `real_acceptance=NOT_RUN`.
+M0.5 ist damit implementiert, aber noch nicht vollständig real akzeptiert.
+
 ## Noch nicht implementiert
 
-- globale M0-Abnahme inklusive Real-Asset-32-Step-/Replay-/Reset-Gates;
+- globale M0-Abnahme und M0.5-Real-Gates mit vollständigem externem
+  Replay-/Reset-/Soak-/Throughput-Lauf;
 - automatischer Fixturebau im Upstream;
 - Human-Demo-Recorder;
 - BC-Trainingsloop;
